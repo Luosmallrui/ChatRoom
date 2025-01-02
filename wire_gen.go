@@ -31,8 +31,21 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		UserService: userService,
 		UsersRepo:   users,
 	}
+	admin := dao.NewAdmin(db)
+	jwtTokenStorage := dao.NewTokenSessionStorage(redisClient)
+	captchaStorage := dao.NewCaptchaStorage(redisClient)
+	captcha := dao.NewBase64Captcha(captchaStorage)
+	authController := &controller.AuthController{
+		Config:          conf,
+		AdminRepo:       admin,
+		UserRepo:        users,
+		JwtTokenStorage: jwtTokenStorage,
+		ICaptcha:        captcha,
+		UserService:     userService,
+	}
 	controllers := &controller.Controllers{
 		User: userController,
+		Auth: authController,
 	}
 	appProvider := &core.AppProvider{
 		Config:      conf,

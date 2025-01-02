@@ -25,10 +25,11 @@ type UserService struct {
 }
 
 type UserRegisterOpt struct {
-	Nickname string
-	Mobile   string
-	Password string
-	Platform string
+	Nickname string `json:"nickname"`
+	Mobile   string `json:"mobile"`
+	Password string `json:"password"`
+	Platform string `json:"platform"`
+	Email    string `json:"email"`
 }
 
 // Register 注册用户
@@ -38,13 +39,13 @@ func (s *UserService) Register(ctx context.Context, opt *UserRegisterOpt) (*mode
 	}
 
 	user := &model.Users{
-		Mobile:   opt.Mobile,
-		Nickname: opt.Nickname,
-		Avatar:   "",
-		Gender:   model.UsersGenderDefault,
-		//Password:  encrypt.HashPassword(opt.Password),
+		Mobile:    opt.Mobile,
+		Nickname:  opt.Nickname,
+		Avatar:    "",
+		Gender:    model.UsersGenderDefault,
+		Password:  encrypt.HashPassword(opt.Password),
 		Motto:     "",
-		Email:     "",
+		Email:     opt.Email,
 		Birthday:  "",
 		IsRobot:   model.UsersGenderDefault,
 		CreatedAt: time.Now(),

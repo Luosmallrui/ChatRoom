@@ -17,7 +17,7 @@ type Config struct {
 	//Filesystem *Filesystem `json:"filesystem" yaml:"filesystem"`
 	//Email      *Email      `json:"email" yaml:"email"`
 	Server *Server `json:"server" yaml:"server"`
-	//Nsq        *Nsq        `json:"nsq" yaml:"nsq"` // 目前没用到
+	Nsq    *Nsq    `json:"nsq" yaml:"nsq"`
 }
 
 type Server struct {

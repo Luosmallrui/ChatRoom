@@ -1,13 +1,13 @@
 package service
 
 import (
-	"chatroom/dao"
-	"chatroom/model"
 	"context"
 	"errors"
 	"time"
 
-	"chatroom/pkg/encrypt"
+	"go-chat/internal/pkg/encrypt"
+	"go-chat/internal/repository/model"
+	"go-chat/internal/repository/repo"
 	"gorm.io/gorm"
 )
 
@@ -21,15 +21,14 @@ type IUserService interface {
 }
 
 type UserService struct {
-	UsersRepo *dao.Users
+	UsersRepo *repo.Users
 }
 
 type UserRegisterOpt struct {
-	Nickname string `json:"nickname"`
-	Mobile   string `json:"mobile"`
-	Password string `json:"password"`
-	Platform string `json:"platform"`
-	Email    string `json:"email"`
+	Nickname string
+	Mobile   string
+	Password string
+	Platform string
 }
 
 // Register 注册用户
@@ -45,9 +44,9 @@ func (s *UserService) Register(ctx context.Context, opt *UserRegisterOpt) (*mode
 		Gender:    model.UsersGenderDefault,
 		Password:  encrypt.HashPassword(opt.Password),
 		Motto:     "",
-		Email:     opt.Email,
+		Email:     "",
 		Birthday:  "",
-		IsRobot:   model.UsersGenderDefault,
+		IsRobot:   model.No,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}

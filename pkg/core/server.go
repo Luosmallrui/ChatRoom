@@ -8,14 +8,36 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	gonanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/urfave/cli/v2"
-	//"go-chat/internal/pkg/server"
 	"golang.org/x/sync/errgroup"
 )
+
+var (
+	once sync.Once
+	// 服务唯一ID
+	serverId string
+)
+
+func init() {
+	once.Do(func() {
+		id, err := gonanoid.Generate("0123456789abcdefghjklmnpqrstuvwxyz", 10)
+		if err != nil {
+			panic(err)
+		}
+
+		serverId = id
+	})
+}
+
+func GetServerId() string {
+	return serverId
+}
 
 func Run(ctx *cli.Context, app *AppProvider) error {
 	if !app.Config.Debug() {

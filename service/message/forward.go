@@ -1,13 +1,13 @@
 package message
 
 import (
+	"chatroom/model"
+	"chatroom/pkg/jsonutil"
+	"chatroom/pkg/logger"
+	"chatroom/pkg/strutil"
+	"chatroom/types"
 	"context"
 	"github.com/samber/lo"
-	"go-chat/internal/entity"
-	"go-chat/internal/pkg/jsonutil"
-	"go-chat/internal/pkg/logger"
-	"go-chat/internal/pkg/strutil"
-	"go-chat/internal/repository/model"
 	"time"
 )
 
@@ -28,7 +28,7 @@ func (s *Service) toSplitForward(ctx context.Context, req ForwardMessageOpt) err
 		messageItems = make([]model.TalkRecord, 0)
 	)
 
-	if req.TalkMode == entity.ChatGroupMode {
+	if req.TalkMode == types.ChatGroupMode {
 		records := make([]model.TalkGroupMessage, 0)
 
 		err := db.Table("talk_group_message").Where("group_id = ? and msg_id in ?", req.ToFromId, req.MsgIds).Scan(&records).Error
@@ -59,7 +59,7 @@ func (s *Service) toSplitForward(ctx context.Context, req ForwardMessageOpt) err
 	}
 
 	// 向群发送消息
-	if req.ToUserIdType == entity.ChatGroupMode {
+	if req.ToUserIdType == types.ChatGroupMode {
 		sequences := s.Sequence.BatchGet(ctx, req.ToUserId, false, int64(len(messageItems)))
 
 		items := make([]model.TalkGroupMessage, 0)
@@ -78,12 +78,12 @@ func (s *Service) toSplitForward(ctx context.Context, req ForwardMessageOpt) err
 		}
 
 		if err := db.Create(items).Error; err == nil {
-			err = s.PushMessage.MultiPush(ctx, entity.ImTopicChat,
-				lo.Map(items, func(item model.TalkGroupMessage, index int) *entity.SubscribeMessage {
-					return &entity.SubscribeMessage{
-						Event: entity.SubEventImMessage,
-						Payload: jsonutil.Encode(entity.SubEventImMessagePayload{
-							TalkMode: entity.ChatGroupMode,
+			err = s.PushMessage.MultiPush(ctx, types.ImTopicChat,
+				lo.Map(items, func(item model.TalkGroupMessage, index int) *types.SubscribeMessage {
+					return &types.SubscribeMessage{
+						Event: types.SubEventImMessage,
+						Payload: jsonutil.Encode(types.SubEventImMessagePayload{
+							TalkMode: types.ChatGroupMode,
 							Message:  jsonutil.Encode(item),
 						}),
 					}
@@ -136,17 +136,17 @@ func (s *Service) toSplitForward(ctx context.Context, req ForwardMessageOpt) err
 		}
 
 		if err := db.Create(items).Error; err == nil {
-			list := lo.Map(items, func(item model.TalkUserMessage, _ int) *entity.SubscribeMessage {
-				return &entity.SubscribeMessage{
-					Event: entity.SubEventImMessage,
-					Payload: jsonutil.Encode(entity.SubEventImMessagePayload{
-						TalkMode: entity.ChatPrivateMode,
+			list := lo.Map(items, func(item model.TalkUserMessage, _ int) *types.SubscribeMessage {
+				return &types.SubscribeMessage{
+					Event: types.SubEventImMessage,
+					Payload: jsonutil.Encode(types.SubEventImMessagePayload{
+						TalkMode: types.ChatPrivateMode,
 						Message:  jsonutil.Encode(item),
 					}),
 				}
 			})
 
-			_ = s.PushMessage.MultiPush(ctx, entity.ImTopicChat, list)
+			_ = s.PushMessage.MultiPush(ctx, types.ImTopicChat, list)
 		} else {
 			logger.Errorf("split forward message failed :%s", err.Error())
 		}
@@ -170,10 +170,10 @@ func (s *Service) toCombineForward(ctx context.Context, req ForwardMessageOpt) e
 			MsgIds:     req.MsgIds,
 			Records:    make([]model.TalkRecordExtraForwardRecord, 0),
 		}
-		pushMessageItems = make([]entity.SubEventImMessagePayload, 0)
+		pushMessageItems = make([]types.SubEventImMessagePayload, 0)
 	)
 
-	if req.TalkMode == entity.ChatGroupMode {
+	if req.TalkMode == types.ChatGroupMode {
 		records := make([]model.TalkGroupMessage, 0)
 
 		err := db.Table("talk_group_message").Where("group_id = ? and msg_id in ?", req.ToFromId, req.MsgIds).Order("sequence asc").Limit(3).Scan(&records).Error
@@ -224,7 +224,7 @@ func (s *Service) toCombineForward(ctx context.Context, req ForwardMessageOpt) e
 	}
 
 	switch req.ToUserIdType {
-	case entity.ChatPrivateMode: // 好友发送消息
+	case types.ChatPrivateMode: // 好友发送消息
 		items := make([]model.TalkUserMessage, 0)
 
 		msgId := strutil.NewMsgId()
@@ -234,7 +234,7 @@ func (s *Service) toCombineForward(ctx context.Context, req ForwardMessageOpt) e
 			MsgId:     strutil.NewMsgId(),
 			OrgMsgId:  msgId,
 			Sequence:  s.Sequence.Get(ctx, req.ToUserId, true),
-			MsgType:   entity.ChatMsgTypeForward,
+			MsgType:   types.ChatMsgTypeForward,
 			UserId:    req.ToUserId,
 			ToFromId:  req.UserId,
 			FromId:    req.UserId,
@@ -250,7 +250,7 @@ func (s *Service) toCombineForward(ctx context.Context, req ForwardMessageOpt) e
 			MsgId:     strutil.NewMsgId(),
 			OrgMsgId:  msgId,
 			Sequence:  s.Sequence.Get(ctx, req.UserId, true),
-			MsgType:   entity.ChatMsgTypeForward,
+			MsgType:   types.ChatMsgTypeForward,
 			UserId:    req.UserId,
 			ToFromId:  req.ToUserId,
 			FromId:    req.UserId,
@@ -266,17 +266,17 @@ func (s *Service) toCombineForward(ctx context.Context, req ForwardMessageOpt) e
 		}
 
 		for _, item := range items {
-			pushMessageItems = append(pushMessageItems, entity.SubEventImMessagePayload{
-				TalkMode: entity.ChatPrivateMode,
+			pushMessageItems = append(pushMessageItems, types.SubEventImMessagePayload{
+				TalkMode: types.ChatPrivateMode,
 				Message:  jsonutil.Encode(item),
 			})
 		}
 
-	case entity.ChatGroupMode: // 向群发送消息
+	case types.ChatGroupMode: // 向群发送消息
 		record := model.TalkGroupMessage{
 			MsgId:     strutil.NewMsgId(),
 			Sequence:  s.Sequence.Get(ctx, req.ToUserId, false),
-			MsgType:   entity.ChatMsgTypeForward,
+			MsgType:   types.ChatMsgTypeForward,
 			GroupId:   req.ToUserId,
 			FromId:    req.UserId,
 			IsRevoked: model.No,
@@ -289,19 +289,19 @@ func (s *Service) toCombineForward(ctx context.Context, req ForwardMessageOpt) e
 			return err
 		}
 
-		pushMessageItems = append(pushMessageItems, entity.SubEventImMessagePayload{
-			TalkMode: entity.ChatGroupMode,
+		pushMessageItems = append(pushMessageItems, types.SubEventImMessagePayload{
+			TalkMode: types.ChatGroupMode,
 			Message:  jsonutil.Encode(record),
 		})
 	}
 
 	if len(pushMessageItems) > 0 {
 		err := s.PushMessage.MultiPush(ctx,
-			entity.ImTopicChat,
-			lo.Map(pushMessageItems, func(item entity.SubEventImMessagePayload, index int) *entity.SubscribeMessage {
-				return &entity.SubscribeMessage{
-					Event: entity.SubEventImMessage,
-					Payload: jsonutil.Encode(entity.SubEventImMessagePayload{
+			types.ImTopicChat,
+			lo.Map(pushMessageItems, func(item types.SubEventImMessagePayload, index int) *types.SubscribeMessage {
+				return &types.SubscribeMessage{
+					Event: types.SubEventImMessage,
+					Payload: jsonutil.Encode(types.SubEventImMessagePayload{
 						TalkMode: item.TalkMode,
 						Message:  item.Message,
 					}),
@@ -335,7 +335,7 @@ func (s *Service) findUserNameList(ctx context.Context, uids []int) (map[int]str
 
 func text(msgType int, extra string) string {
 	switch msgType {
-	case entity.ChatMsgTypeText:
+	case types.ChatMsgTypeText:
 		data := model.TalkRecordExtraText{}
 		if err := jsonutil.Decode(extra, &data); err != nil {
 			return ""
@@ -343,7 +343,7 @@ func text(msgType int, extra string) string {
 
 		return strutil.MtSubstr(data.Content, 0, 200)
 	default:
-		if value, ok := entity.ChatMsgTypeMapping[msgType]; ok {
+		if value, ok := types.ChatMsgTypeMapping[msgType]; ok {
 			return value
 		}
 	}

@@ -17,7 +17,7 @@ type IGroupApplyService interface {
 
 type GroupApplyService struct {
 	*dao.Source
-	GroupApplyRepo *repo.GroupApply
+	GroupApplyRepo *dao.GroupApply
 }
 
 func (s *GroupApplyService) Auth(ctx context.Context, applyId, userId int) bool {

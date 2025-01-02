@@ -1,13 +1,13 @@
 package service
 
 import (
+	"chatroom/dao"
+	"chatroom/model"
+	"chatroom/pkg/encrypt"
 	"context"
 	"errors"
 	"time"
 
-	"go-chat/internal/pkg/encrypt"
-	"go-chat/internal/repository/model"
-	"go-chat/internal/repository/repo"
 	"gorm.io/gorm"
 )
 
@@ -21,7 +21,7 @@ type IUserService interface {
 }
 
 type UserService struct {
-	UsersRepo *repo.Users
+	UsersRepo *dao.Users
 }
 
 type UserRegisterOpt struct {

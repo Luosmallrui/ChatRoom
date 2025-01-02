@@ -1,10 +1,10 @@
 package service
 
 import (
+	"chatroom/dao"
+	"chatroom/model"
 	"context"
 
-	"go-chat/internal/repository/model"
-	"go-chat/internal/repository/repo"
 	"gorm.io/gorm"
 )
 
@@ -17,8 +17,8 @@ type IGroupMemberService interface {
 }
 
 type GroupMemberService struct {
-	*repo.Source
-	GroupMemberRepo *repo.GroupMember
+	*dao.Source
+	GroupMemberRepo *dao.GroupMember
 }
 
 func (g *GroupMemberService) Handover(ctx context.Context, groupId int, userId int, memberId int) error {

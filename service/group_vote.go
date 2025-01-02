@@ -1,13 +1,13 @@
 package service
 
 import (
+	"chatroom/dao"
+	"chatroom/model"
+	"chatroom/pkg/jsonutil"
 	"context"
 	"errors"
 	"fmt"
 
-	"go-chat/internal/pkg/jsonutil"
-	"go-chat/internal/repository/model"
-	"go-chat/internal/repository/repo"
 	"gorm.io/gorm"
 )
 
@@ -20,10 +20,10 @@ type IGroupVoteService interface {
 }
 
 type GroupVoteService struct {
-	*repo.Source
-	GroupMemberRepo *repo.GroupMember
-	GroupVoteRepo   *repo.GroupVote
-	Sequence        *repo.Sequence
+	*dao.Source
+	GroupMemberRepo *dao.GroupMember
+	GroupVoteRepo   *dao.GroupVote
+	Sequence        *dao.Sequence
 }
 
 type GroupVoteCreateOpt struct {

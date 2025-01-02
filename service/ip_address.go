@@ -1,11 +1,10 @@
 package service
 
 import (
+	"chatroom/config"
+	"chatroom/dao"
+	"chatroom/pkg/ipaddress"
 	"context"
-
-	"go-chat/config"
-	"go-chat/internal/pkg/ipaddress"
-	"go-chat/internal/repository/repo"
 )
 
 var _ IIpAddressService = (*IpAddressService)(nil)
@@ -15,7 +14,7 @@ type IIpAddressService interface {
 }
 
 type IpAddressService struct {
-	*repo.Source
+	*dao.Source
 	Config          *config.Config
 	IpAddressClient *ipaddress.Client
 }

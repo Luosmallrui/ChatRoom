@@ -1,9 +1,8 @@
 package service
 
 import (
+	"chatroom/dao/cache"
 	"context"
-
-	"go-chat/internal/repository/cache"
 )
 
 var _ IRoomService = (*RoomService)(nil)

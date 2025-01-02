@@ -1,10 +1,8 @@
 package service
 
-import (
-	"go-chat/internal/repository/repo"
-)
+import "chatroom/dao"
 
 type OrganizeService struct {
-	*repo.Source
-	Repo *repo.Organize
+	*dao.Source
+	Repo *dao.Organize
 }

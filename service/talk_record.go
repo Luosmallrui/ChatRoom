@@ -1,17 +1,17 @@
 package service
 
 import (
+	"chatroom/dao"
+	"chatroom/dao/cache"
+	"chatroom/model"
+	"chatroom/pkg/jsonutil"
+	"chatroom/pkg/sliceutil"
+	"chatroom/types"
 	"context"
 	"errors"
 	"fmt"
 	"time"
 
-	"go-chat/internal/entity"
-	"go-chat/internal/pkg/jsonutil"
-	"go-chat/internal/pkg/sliceutil"
-	"go-chat/internal/repository/cache"
-	"go-chat/internal/repository/model"
-	"go-chat/internal/repository/repo"
 	"gorm.io/gorm"
 )
 
@@ -38,13 +38,13 @@ type TalkRecord struct {
 }
 
 type TalkRecordService struct {
-	*repo.Source
+	*dao.Source
 	TalkVoteCache         *cache.Vote
-	TalkRecordsVoteRepo   *repo.GroupVote
-	GroupMemberRepo       *repo.GroupMember
-	TalkRecordFriendRepo  *repo.TalkUserMessage
-	TalkRecordGroupRepo   *repo.TalkGroupMessage
-	TalkRecordsDeleteRepo *repo.TalkGroupMessageDel
+	TalkRecordsVoteRepo   *dao.GroupVote
+	GroupMemberRepo       *dao.GroupMember
+	TalkRecordFriendRepo  *dao.TalkUserMessage
+	TalkRecordGroupRepo   *dao.TalkGroupMessage
+	TalkRecordsDeleteRepo *dao.TalkGroupMessageDel
 }
 
 type FindAllTalkRecordsOpt struct {
@@ -153,7 +153,7 @@ func (s *TalkRecordService) FindAllTalkRecords(ctx context.Context, opt *FindAll
 			break
 		}
 
-		if opt.TalkType == entity.ChatGroupMode {
+		if opt.TalkType == types.ChatGroupMode {
 			tmpMsgIds := make([]string, 0, len(list))
 			for _, v := range list {
 				tmpMsgIds = append(tmpMsgIds, v.MsgId)

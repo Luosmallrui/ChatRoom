@@ -1,12 +1,11 @@
 package service
 
 import (
+	"chatroom/dao/cache"
+	"chatroom/pkg/strutil"
 	"context"
 	"fmt"
 	"time"
-
-	"go-chat/internal/pkg/strutil"
-	"go-chat/internal/repository/cache"
 )
 
 var _ ISmsService = (*SmsService)(nil)

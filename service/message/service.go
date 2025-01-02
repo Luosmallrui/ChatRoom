@@ -1,21 +1,21 @@
 package message
 
 import (
+	"chatroom/dao"
+	"chatroom/dao/cache"
+	"chatroom/model"
+	"chatroom/pkg/business"
+	"chatroom/pkg/filesystem"
+	"chatroom/pkg/jsonutil"
+	"chatroom/pkg/logger"
+	"chatroom/pkg/strutil"
+	"chatroom/types"
 	"context"
 	"errors"
 	"fmt"
-	"go-chat/internal/business"
 	"time"
 
 	"github.com/google/uuid"
-	"go-chat/internal/entity"
-	"go-chat/internal/pkg/filesystem"
-	"go-chat/internal/pkg/jsonutil"
-	"go-chat/internal/pkg/logger"
-	"go-chat/internal/pkg/strutil"
-	"go-chat/internal/repository/cache"
-	"go-chat/internal/repository/model"
-	"go-chat/internal/repository/repo"
 	"gorm.io/gorm"
 )
 
@@ -77,18 +77,18 @@ type IService interface {
 }
 
 type Service struct {
-	*repo.Source
-	GroupMemberRepo     *repo.GroupMember
-	SplitUploadRepo     *repo.FileUpload
-	TalkRecordsVoteRepo *repo.GroupVote
-	UsersRepo           *repo.Users
+	*dao.Source
+	GroupMemberRepo     *dao.GroupMember
+	SplitUploadRepo     *dao.FileUpload
+	TalkRecordsVoteRepo *dao.GroupVote
+	UsersRepo           *dao.Users
 	Filesystem          filesystem.IFilesystem
 	UnreadStorage       *cache.UnreadStorage
 	MessageStorage      *cache.MessageStorage
 	ServerStorage       *cache.ServerStorage
 	ClientStorage       *cache.ClientStorage
-	Sequence            *repo.Sequence
-	RobotRepo           *repo.Robot
+	Sequence            *dao.Sequence
+	RobotRepo           *dao.Robot
 
 	PushMessage *business.PushMessage
 }
@@ -118,7 +118,7 @@ func (s *Service) CreateTextMessage(ctx context.Context, option CreateTextMessag
 		TalkMode: option.TalkMode,
 		FromId:   option.FromId,
 		ToFromId: option.ToFromId,
-		MsgType:  entity.ChatMsgTypeText,
+		MsgType:  types.ChatMsgTypeText,
 		QuoteId:  option.QuoteId,
 		Extra: jsonutil.Encode(model.TalkRecordExtraText{
 			Content:  option.Content,
@@ -132,7 +132,7 @@ func (s *Service) CreateImageMessage(ctx context.Context, option CreateImageMess
 		TalkMode: option.TalkMode,
 		FromId:   option.FromId,
 		ToFromId: option.ToFromId,
-		MsgType:  entity.ChatMsgTypeImage,
+		MsgType:  types.ChatMsgTypeImage,
 		QuoteId:  option.QuoteId,
 		Extra: jsonutil.Encode(model.TalkRecordExtraImage{
 			Size:   option.Size,
@@ -148,7 +148,7 @@ func (s *Service) CreateVoiceMessage(ctx context.Context, option CreateVoiceMess
 		TalkMode: option.TalkMode,
 		FromId:   option.FromId,
 		ToFromId: option.ToFromId,
-		MsgType:  entity.ChatMsgTypeAudio,
+		MsgType:  types.ChatMsgTypeAudio,
 		Extra: jsonutil.Encode(model.TalkRecordExtraAudio{
 			Name:     "",
 			Size:     option.Size,
@@ -163,7 +163,7 @@ func (s *Service) CreateVideoMessage(ctx context.Context, option CreateVideoMess
 		TalkMode: option.TalkMode,
 		FromId:   option.FromId,
 		ToFromId: option.ToFromId,
-		MsgType:  entity.ChatMsgTypeVideo,
+		MsgType:  types.ChatMsgTypeVideo,
 		Extra: jsonutil.Encode(model.TalkRecordExtraVideo{
 			Name:     "",
 			Cover:    option.Cover,
@@ -186,7 +186,7 @@ func (s *Service) CreateFileMessage(ctx context.Context, option CreateFileMessag
 	filePath := fmt.Sprintf("talk-files/%s/%s.%s", now.Format("200601"), uuid.New().String(), file.FileExt)
 
 	// 公开文件
-	if entity.GetMediaType(file.FileExt) <= 3 {
+	if types.GetMediaType(file.FileExt) <= 3 {
 		filePath = strutil.GenMediaObjectName(file.FileExt, 0, 0)
 		// 如果是多媒体文件，则将私有文件转移到公开文件
 		if err := s.Filesystem.CopyObject(
@@ -209,24 +209,24 @@ func (s *Service) CreateFileMessage(ctx context.Context, option CreateFileMessag
 		ToFromId: option.ToFromId,
 	}
 
-	switch entity.GetMediaType(file.FileExt) {
-	case entity.MediaFileAudio:
-		message.MsgType = entity.ChatMsgTypeAudio
+	switch types.GetMediaType(file.FileExt) {
+	case types.MediaFileAudio:
+		message.MsgType = types.ChatMsgTypeAudio
 		message.Extra = jsonutil.Encode(&model.TalkRecordExtraAudio{
 			Size:     int(file.FileSize),
 			Url:      publicUrl,
 			Duration: 0,
 		})
-	case entity.MediaFileVideo:
-		message.MsgType = entity.ChatMsgTypeVideo
+	case types.MediaFileVideo:
+		message.MsgType = types.ChatMsgTypeVideo
 		message.Extra = jsonutil.Encode(&model.TalkRecordExtraVideo{
 			Cover:    "",
 			Size:     int(file.FileSize),
 			Url:      publicUrl,
 			Duration: 0,
 		})
-	case entity.MediaFileOther:
-		message.MsgType = entity.ChatMsgTypeFile
+	case types.MediaFileOther:
+		message.MsgType = types.ChatMsgTypeFile
 		message.Extra = jsonutil.Encode(&model.TalkRecordExtraFile{
 			Name: file.OriginalName,
 			Size: int(file.FileSize),
@@ -242,7 +242,7 @@ func (s *Service) CreateCodeMessage(ctx context.Context, option CreateCodeMessag
 		TalkMode: option.TalkMode,
 		FromId:   option.FromId,
 		ToFromId: option.ToFromId,
-		MsgType:  entity.ChatMsgTypeCode,
+		MsgType:  types.ChatMsgTypeCode,
 		Extra: jsonutil.Encode(model.TalkRecordExtraCode{
 			Lang: option.Lang,
 			Code: option.Code,
@@ -255,7 +255,7 @@ func (s *Service) CreateVoteMessage(ctx context.Context, option CreateVoteMessag
 		TalkMode: option.TalkMode,
 		FromId:   option.FromId,
 		ToFromId: option.ToFromId,
-		MsgType:  entity.ChatMsgTypeVote,
+		MsgType:  types.ChatMsgTypeVote,
 		Extra: jsonutil.Encode(model.TalkRecordExtraVote{
 			VoteId: option.VoteId,
 		}),
@@ -276,7 +276,7 @@ func (s *Service) CreateEmoticonMessage(ctx context.Context, option CreateEmotic
 		TalkMode: option.TalkMode,
 		FromId:   option.FromId,
 		ToFromId: option.ToFromId,
-		MsgType:  entity.ChatMsgTypeImage,
+		MsgType:  types.ChatMsgTypeImage,
 		Extra: jsonutil.Encode(model.TalkRecordExtraImage{
 			Url: emoticon.Url,
 		}),
@@ -387,7 +387,7 @@ func (s *Service) CreateLocationMessage(ctx context.Context, option CreateLocati
 		TalkMode: option.TalkMode,
 		FromId:   option.FromId,
 		ToFromId: option.ToFromId,
-		MsgType:  entity.ChatMsgTypeLocation,
+		MsgType:  types.ChatMsgTypeLocation,
 		Extra: jsonutil.Encode(model.TalkRecordExtraLocation{
 			Longitude:   option.Longitude,
 			Latitude:    option.Latitude,
@@ -410,7 +410,7 @@ func (s *Service) CreateBusinessCardMessage(ctx context.Context, option CreateBu
 		TalkMode: option.TalkMode,
 		FromId:   option.FromId,
 		ToFromId: option.ToFromId,
-		MsgType:  entity.ChatMsgTypeCard,
+		MsgType:  types.ChatMsgTypeCard,
 		Extra: jsonutil.Encode(model.TalkRecordExtraUserShare{
 			UserId:   option.UserId,
 			Nickname: userInfo.Nickname,
@@ -433,7 +433,7 @@ func (s *Service) CreateMixedMessage(ctx context.Context, option CreateMixedMess
 		TalkMode: option.TalkMode,
 		FromId:   option.FromId,
 		ToFromId: option.ToFromId,
-		MsgType:  entity.ChatMsgTypeMixed,
+		MsgType:  types.ChatMsgTypeMixed,
 		Extra: jsonutil.Encode(model.TalkRecordExtraMixed{
 			Items: items,
 		}),
@@ -447,7 +447,7 @@ func (s *Service) CreateLoginMessage(ctx context.Context, option CreateLoginMess
 	}
 
 	return s.CreateToUserPrivateMessage(ctx, &model.TalkUserMessage{
-		MsgType:  entity.ChatMsgTypeLogin,
+		MsgType:  types.ChatMsgTypeLogin,
 		UserId:   option.UserId,
 		ToFromId: robot.UserId,
 		FromId:   robot.UserId,

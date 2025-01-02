@@ -1,22 +1,20 @@
 package service
 
 import (
+	"chatroom/dao"
+	"chatroom/dao/cache"
+	"chatroom/model"
+	"chatroom/pkg/business"
+	"chatroom/pkg/jsonutil"
+	"chatroom/pkg/sliceutil"
+	"chatroom/pkg/strutil"
+	"chatroom/pkg/timeutil"
+	"chatroom/types"
 	"context"
 	"errors"
 	"github.com/samber/lo"
-	"go-chat/internal/business"
-	"time"
-
-	"go-chat/internal/pkg/strutil"
-	"go-chat/internal/repository/cache"
-	"go-chat/internal/repository/model"
-	"go-chat/internal/repository/repo"
 	"gorm.io/gorm"
-
-	"go-chat/internal/entity"
-	"go-chat/internal/pkg/jsonutil"
-	"go-chat/internal/pkg/sliceutil"
-	"go-chat/internal/pkg/timeutil"
+	"time"
 )
 
 var _ IGroupService = (*GroupService)(nil)
@@ -32,11 +30,11 @@ type IGroupService interface {
 }
 
 type GroupService struct {
-	*repo.Source
-	GroupRepo       *repo.Group
-	GroupMemberRepo *repo.GroupMember
+	*dao.Source
+	GroupRepo       *dao.Group
+	GroupMemberRepo *dao.GroupMember
 	Relation        *cache.Relation
-	Sequence        *repo.Sequence
+	Sequence        *dao.Sequence
 	PushMessage     *business.PushMessage
 }
 
@@ -115,7 +113,7 @@ func (g *GroupService) Create(ctx context.Context, opt *GroupCreateOpt) (int, er
 		record := &model.TalkGroupMessage{
 			MsgId:     strutil.NewMsgId(),
 			Sequence:  g.Sequence.Get(ctx, group.Id, false),
-			MsgType:   entity.ChatMsgSysGroupCreate,
+			MsgType:   types.ChatMsgSysGroupCreate,
 			GroupId:   group.Id,
 			FromId:    0,
 			IsRevoked: model.No,
@@ -135,10 +133,10 @@ func (g *GroupService) Create(ctx context.Context, opt *GroupCreateOpt) (int, er
 		return nil
 	})
 
-	_ = g.PushMessage.MultiPush(ctx, entity.ImTopicChat, []*entity.SubscribeMessage{
+	_ = g.PushMessage.MultiPush(ctx, types.ImTopicChat, []*types.SubscribeMessage{
 		{
-			Event: entity.SubEventGroupJoin,
-			Payload: jsonutil.Encode(entity.SubEventGroupJoinPayload{
+			Event: types.SubEventGroupJoin,
+			Payload: jsonutil.Encode(types.SubEventGroupJoinPayload{
 				GroupId: group.Id,
 				Type:    1,
 				Uids:    uids,
@@ -214,7 +212,7 @@ func (g *GroupService) Secede(ctx context.Context, groupId int, uid int) error {
 	record := &model.TalkGroupMessage{
 		MsgId:     strutil.NewMsgId(),
 		Sequence:  g.Sequence.Get(ctx, groupId, false),
-		MsgType:   entity.ChatMsgSysGroupMemberQuit,
+		MsgType:   types.ChatMsgSysGroupMemberQuit,
 		GroupId:   groupId,
 		FromId:    0,
 		IsRevoked: model.No,
@@ -247,19 +245,19 @@ func (g *GroupService) Secede(ctx context.Context, groupId int, uid int) error {
 
 	g.Relation.DelGroupRelation(ctx, uid, groupId)
 
-	_ = g.PushMessage.MultiPush(ctx, entity.ImTopicChat, []*entity.SubscribeMessage{
+	_ = g.PushMessage.MultiPush(ctx, types.ImTopicChat, []*types.SubscribeMessage{
 		{
-			Event: entity.SubEventGroupJoin,
-			Payload: jsonutil.Encode(entity.SubEventGroupJoinPayload{
+			Event: types.SubEventGroupJoin,
+			Payload: jsonutil.Encode(types.SubEventGroupJoinPayload{
 				Type:    2,
 				GroupId: groupId,
 				Uids:    []int{uid},
 			}),
 		},
 		{
-			Event: entity.SubEventImMessage,
-			Payload: jsonutil.Encode(entity.SubEventImMessagePayload{
-				TalkMode: entity.ChatGroupMode,
+			Event: types.SubEventImMessage,
+			Payload: jsonutil.Encode(types.SubEventImMessagePayload{
+				TalkMode: types.ChatGroupMode,
 				Message:  jsonutil.Encode(record),
 			}),
 		},
@@ -295,7 +293,9 @@ func (g *GroupService) Invite(ctx context.Context, opt *GroupInviteOpt) error {
 	}
 
 	listHash := make(map[int]*model.TalkSession)
-	db.Select("id", "user_id", "is_delete").Where("user_id in ? and to_from_id = ? and talk_mode = ?", opt.MemberIds, opt.GroupId, entity.ChatGroupMode).Find(&talkList)
+	db.Select("id", "user_id", "is_delete").
+		Where("user_id in ? and to_from_id = ? and talk_mode = ?", opt.MemberIds, opt.GroupId, types.ChatGroupMode).
+		Find(&talkList)
 	for _, item := range talkList {
 		listHash[item.UserId] = item
 	}
@@ -336,7 +336,7 @@ func (g *GroupService) Invite(ctx context.Context, opt *GroupInviteOpt) error {
 
 		if item, ok := listHash[value]; !ok {
 			addTalkList = append(addTalkList, &model.TalkSession{
-				TalkMode: entity.ChatGroupMode,
+				TalkMode: types.ChatGroupMode,
 				UserId:   value,
 				ToFromId: opt.GroupId,
 			})
@@ -352,7 +352,7 @@ func (g *GroupService) Invite(ctx context.Context, opt *GroupInviteOpt) error {
 	record := &model.TalkGroupMessage{
 		MsgId:     strutil.NewMsgId(),
 		Sequence:  g.Sequence.Get(ctx, opt.GroupId, false),
-		MsgType:   entity.ChatMsgSysGroupMemberJoin,
+		MsgType:   types.ChatMsgSysGroupMemberJoin,
 		GroupId:   opt.GroupId,
 		FromId:    0, // 系统消息
 		IsRevoked: model.No,
@@ -401,17 +401,17 @@ func (g *GroupService) Invite(ctx context.Context, opt *GroupInviteOpt) error {
 		return err
 	}
 
-	_ = g.PushMessage.MultiPush(ctx, entity.ImTopicChat, []*entity.SubscribeMessage{
+	_ = g.PushMessage.MultiPush(ctx, types.ImTopicChat, []*types.SubscribeMessage{
 		{
-			Event: entity.SubEventImMessage,
-			Payload: jsonutil.Encode(entity.SubEventImMessagePayload{
-				TalkMode: entity.ChatGroupMode,
+			Event: types.SubEventImMessage,
+			Payload: jsonutil.Encode(types.SubEventImMessagePayload{
+				TalkMode: types.ChatGroupMode,
 				Message:  jsonutil.Encode(record),
 			}),
 		},
 		{
-			Event: entity.SubEventGroupJoin,
-			Payload: jsonutil.Encode(entity.SubEventGroupJoinPayload{
+			Event: types.SubEventGroupJoin,
+			Payload: jsonutil.Encode(types.SubEventGroupJoinPayload{
 				GroupId: opt.GroupId,
 				Type:    1,
 				Uids:    opt.MemberIds,
@@ -465,7 +465,7 @@ func (g *GroupService) RemoveMember(ctx context.Context, opt *GroupRemoveMembers
 	record := &model.TalkGroupMessage{
 		MsgId:     strutil.NewMsgId(),
 		Sequence:  g.Sequence.Get(ctx, opt.GroupId, false),
-		MsgType:   entity.ChatMsgSysGroupMemberKicked,
+		MsgType:   types.ChatMsgSysGroupMemberKicked,
 		GroupId:   opt.GroupId,
 		FromId:    0,
 		IsRevoked: model.No,
@@ -497,19 +497,19 @@ func (g *GroupService) RemoveMember(ctx context.Context, opt *GroupRemoveMembers
 
 	g.Relation.BatchDelGroupRelation(ctx, opt.MemberIds, opt.GroupId)
 
-	_ = g.PushMessage.MultiPush(ctx, entity.ImTopicChat, []*entity.SubscribeMessage{
+	_ = g.PushMessage.MultiPush(ctx, types.ImTopicChat, []*types.SubscribeMessage{
 		{
-			Event: entity.SubEventGroupJoin,
-			Payload: jsonutil.Encode(entity.SubEventGroupJoinPayload{
+			Event: types.SubEventGroupJoin,
+			Payload: jsonutil.Encode(types.SubEventGroupJoinPayload{
 				GroupId: opt.GroupId,
 				Type:    2,
 				Uids:    opt.MemberIds,
 			}),
 		},
 		{
-			Event: entity.SubEventImMessage,
-			Payload: jsonutil.Encode(entity.SubEventImMessagePayload{
-				TalkMode: entity.ChatGroupMode,
+			Event: types.SubEventImMessage,
+			Payload: jsonutil.Encode(types.SubEventImMessagePayload{
+				TalkMode: types.ChatGroupMode,
 				Message:  jsonutil.Encode(record),
 			}),
 		},
@@ -547,7 +547,7 @@ func (g *GroupService) List(userId int) ([]*model.GroupItem, error) {
 
 	query := g.Source.Db().Table("talk_session")
 	query.Select("to_from_id,is_disturb")
-	query.Where("talk_mode = ? and to_from_id in ?", entity.ChatGroupMode, ids)
+	query.Where("talk_mode = ? and to_from_id in ?", types.ChatGroupMode, ids)
 
 	list := make([]*session, 0)
 	if err := query.Find(&list).Error; err != nil {

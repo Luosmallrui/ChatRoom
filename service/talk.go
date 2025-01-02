@@ -1,13 +1,13 @@
 package service
 
 import (
+	"chatroom/dao"
+	"chatroom/model"
+	"chatroom/types"
 	"context"
 	"errors"
 	"time"
 
-	"go-chat/internal/entity"
-	"go-chat/internal/repository/model"
-	"go-chat/internal/repository/repo"
 	"gorm.io/gorm"
 )
 
@@ -32,8 +32,8 @@ type ITalkService interface {
 }
 
 type TalkService struct {
-	*repo.Source
-	GroupMemberRepo *repo.GroupMember
+	*dao.Source
+	GroupMemberRepo *dao.GroupMember
 }
 
 // DeleteRecord 删除消息记录
@@ -41,14 +41,14 @@ func (t *TalkService) DeleteRecord(ctx context.Context, opt *TalkDeleteRecordOpt
 	var db = t.Source.Db().WithContext(ctx)
 
 	// 私有消息直接更新删除状态
-	if opt.TalkMode == entity.ChatPrivateMode {
+	if opt.TalkMode == types.ChatPrivateMode {
 		return db.Model(model.TalkUserMessage{}).
 			Where("user_id = ? and msg_id in ?", opt.UserId, opt.MsgIds).
 			Update("is_deleted", model.Yes).Error
 	}
 
 	if !t.GroupMemberRepo.IsMember(ctx, opt.ToFromId, opt.UserId, false) {
-		return entity.ErrPermissionDenied
+		return types.ErrPermissionDenied
 	}
 
 	var findMsgIds []string
@@ -81,7 +81,7 @@ func (t *TalkService) Revoke(ctx context.Context, opt *TalkRevokeOption) error {
 	db := t.Db().WithContext(ctx)
 
 	switch opt.TalkMode {
-	case entity.ChatPrivateMode:
+	case types.ChatPrivateMode:
 		var record model.TalkUserMessage
 
 		err := db.First(&record, "msg_id = ? and from_id = ?", opt.MsgId, opt.UserId).Error
@@ -105,7 +105,7 @@ func (t *TalkService) Revoke(ctx context.Context, opt *TalkRevokeOption) error {
 			Where("org_msg_id = ?", record.OrgMsgId).
 			Update("is_revoked", model.Yes).Error
 
-	case entity.ChatGroupMode:
+	case types.ChatGroupMode:
 		var record model.TalkGroupMessage
 
 		err := db.First(&record, "msg_id = ? and from_id = ?", opt.MsgId, opt.UserId).Error

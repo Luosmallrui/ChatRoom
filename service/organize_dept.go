@@ -1,10 +1,8 @@
 package service
 
-import (
-	"go-chat/internal/repository/repo"
-)
+import "chatroom/dao"
 
 type DeptService struct {
-	*repo.Source
-	Repo *repo.Department
+	*dao.Source
+	Repo *dao.Department
 }

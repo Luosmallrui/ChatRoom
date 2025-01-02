@@ -1,15 +1,14 @@
 package message
 
 import (
+	"chatroom/dao/cache"
+	"chatroom/model"
+	"chatroom/pkg/jsonutil"
+	"chatroom/pkg/logger"
+	"chatroom/pkg/strutil"
+	"chatroom/types"
 	"context"
 	"time"
-
-	"go-chat/internal/entity"
-	"go-chat/internal/pkg/jsonutil"
-	"go-chat/internal/pkg/logger"
-	"go-chat/internal/pkg/strutil"
-	"go-chat/internal/repository/cache"
-	"go-chat/internal/repository/model"
 )
 
 func (s *Service) CreateGroupMessage(ctx context.Context, option CreateGroupMessageOption) error {
@@ -52,10 +51,10 @@ func (s *Service) CreateGroupMessage(ctx context.Context, option CreateGroupMess
 		return err
 	}
 
-	err := s.PushMessage.Push(ctx, entity.ImTopicChat, &entity.SubscribeMessage{
-		Event: entity.SubEventImMessage,
-		Payload: jsonutil.Encode(entity.SubEventImMessagePayload{
-			TalkMode: entity.ChatGroupMode,
+	err := s.PushMessage.Push(ctx, types.ImTopicChat, &types.SubscribeMessage{
+		Event: types.SubEventImMessage,
+		Payload: jsonutil.Encode(types.SubEventImMessagePayload{
+			TalkMode: types.ChatGroupMode,
 			Message:  jsonutil.Encode(item),
 		}),
 	})
@@ -66,13 +65,13 @@ func (s *Service) CreateGroupMessage(ctx context.Context, option CreateGroupMess
 	pipe := s.Source.Redis().Pipeline()
 	for _, uid := range s.GroupMemberRepo.GetMemberIds(ctx, item.GroupId) {
 		if uid != item.FromId {
-			s.UnreadStorage.PipeIncr(ctx, pipe, uid, entity.ChatGroupMode, item.GroupId)
+			s.UnreadStorage.PipeIncr(ctx, pipe, uid, types.ChatGroupMode, item.GroupId)
 		}
 	}
 	_, _ = pipe.Exec(ctx)
 
 	// 更新最后一条消息
-	_ = s.MessageStorage.Set(ctx, entity.ChatGroupMode, item.FromId, item.GroupId, &cache.LastCacheMessage{
+	_ = s.MessageStorage.Set(ctx, types.ChatGroupMode, item.FromId, item.GroupId, &cache.LastCacheMessage{
 		Content:  s.getTextMessage(item.MsgType, option.Extra),
 		Datetime: item.CreatedAt.Format(time.DateTime),
 	})
@@ -82,7 +81,7 @@ func (s *Service) CreateGroupMessage(ctx context.Context, option CreateGroupMess
 
 func (s *Service) CreateGroupSysMessage(ctx context.Context, option CreateGroupSysMessageOption) error {
 	return s.CreateGroupMessage(ctx, CreateGroupMessageOption{
-		MsgType:  entity.ChatMsgSysText,
+		MsgType:  types.ChatMsgSysText,
 		FromId:   0, // 0:系统消息
 		ToFromId: option.GroupId,
 		Extra: jsonutil.Encode(model.TalkRecordExtraText{

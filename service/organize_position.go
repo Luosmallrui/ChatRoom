@@ -1,10 +1,10 @@
 package service
 
 import (
-	"go-chat/internal/repository/repo"
+	"chatroom/dao"
 )
 
 type PositionService struct {
-	*repo.Source
-	Repo *repo.Position
+	*dao.Source
+	Repo *dao.Position
 }

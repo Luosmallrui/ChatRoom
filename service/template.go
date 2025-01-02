@@ -1,9 +1,6 @@
 package service
 
-import (
-	"go-chat/internal/pkg/utils"
-	"go-chat/internal/resource"
-)
+import "chatroom/utils"
 
 var _ ITemplateService = (*TemplateService)(nil)
 

@@ -1,18 +1,17 @@
 package service
 
 import (
+	"chatroom/dao"
+	"chatroom/model"
+	"chatroom/pkg/timeutil"
+	"chatroom/types"
 	"context"
 	"errors"
 	"fmt"
 	"github.com/samber/lo"
-	"go-chat/internal/entity"
+	"gorm.io/gorm"
 	"strings"
 	"time"
-
-	"go-chat/internal/pkg/timeutil"
-	"go-chat/internal/repository/model"
-	"go-chat/internal/repository/repo"
-	"gorm.io/gorm"
 )
 
 var _ ITalkSessionService = (*TalkSessionService)(nil)
@@ -27,8 +26,8 @@ type ITalkSessionService interface {
 }
 
 type TalkSessionService struct {
-	*repo.Source
-	TalkSessionRepo *repo.TalkSession
+	*dao.Source
+	TalkSessionRepo *dao.TalkSession
 }
 
 func (s *TalkSessionService) List(ctx context.Context, uid int) ([]*model.SearchTalkSession, error) {
@@ -41,8 +40,8 @@ func (s *TalkSessionService) List(ctx context.Context, uid int) ([]*model.Search
 	}
 
 	query := s.Source.Db().WithContext(ctx).Table("talk_session list")
-	query.Joins("left join `users` ON list.to_from_id = `users`.id AND list.talk_mode = ?", entity.ChatPrivateMode)
-	query.Joins("left join `group` ON list.to_from_id = `group`.id AND list.talk_mode = ?", entity.ChatGroupMode)
+	query.Joins("left join `users` ON list.to_from_id = `users`.id AND list.talk_mode = ?", types.ChatPrivateMode)
+	query.Joins("left join `group` ON list.to_from_id = `group`.id AND list.talk_mode = ?", types.ChatGroupMode)
 	query.Where("list.user_id = ? and list.is_delete = ?", uid, model.No)
 	query.Order("list.updated_at desc")
 

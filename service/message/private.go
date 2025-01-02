@@ -1,15 +1,14 @@
 package message
 
 import (
+	"chatroom/dao/cache"
+	"chatroom/model"
+	"chatroom/pkg/jsonutil"
+	"chatroom/pkg/logger"
+	"chatroom/pkg/strutil"
+	"chatroom/types"
 	"context"
 	"time"
-
-	"go-chat/internal/entity"
-	"go-chat/internal/pkg/jsonutil"
-	"go-chat/internal/pkg/logger"
-	"go-chat/internal/pkg/strutil"
-	"go-chat/internal/repository/cache"
-	"go-chat/internal/repository/model"
 )
 
 func (s *Service) CreatePrivateMessage(ctx context.Context, option CreatePrivateMessageOption) error {
@@ -78,22 +77,22 @@ func (s *Service) CreatePrivateMessage(ctx context.Context, option CreatePrivate
 	// 推送消息
 	pipe := s.Source.Redis().Pipeline()
 	for _, item := range items {
-		content := &entity.SubscribeMessage{
-			Event: entity.SubEventImMessage,
-			Payload: jsonutil.Encode(entity.SubEventImMessagePayload{
-				TalkMode: entity.ChatPrivateMode,
+		content := &types.SubscribeMessage{
+			Event: types.SubEventImMessage,
+			Payload: jsonutil.Encode(types.SubEventImMessagePayload{
+				TalkMode: types.ChatPrivateMode,
 				Message:  jsonutil.Encode(item),
 			}),
 		}
 
-		pipe.Publish(ctx, entity.ImTopicChat, jsonutil.Encode(content))
+		pipe.Publish(ctx, types.ImTopicChat, jsonutil.Encode(content))
 
 		if item.UserId != option.FromId {
-			s.UnreadStorage.PipeIncr(ctx, pipe, item.UserId, entity.ChatPrivateMode, item.ToFromId)
+			s.UnreadStorage.PipeIncr(ctx, pipe, item.UserId, types.ChatPrivateMode, item.ToFromId)
 		}
 
 		// 更新最后一条消息
-		_ = s.MessageStorage.Set(ctx, entity.ChatPrivateMode, item.UserId, item.ToFromId, &cache.LastCacheMessage{
+		_ = s.MessageStorage.Set(ctx, types.ChatPrivateMode, item.UserId, item.ToFromId, &cache.LastCacheMessage{
 			Content:  s.getTextMessage(item.MsgType, option.Extra),
 			Datetime: item.CreatedAt.Format(time.DateTime),
 		})
@@ -132,10 +131,10 @@ func (s *Service) CreateToUserPrivateMessage(ctx context.Context, data *model.Ta
 		return err
 	}
 
-	err := s.PushMessage.Push(ctx, entity.ImTopicChat, &entity.SubscribeMessage{
-		Event: entity.SubEventImMessage,
-		Payload: jsonutil.Encode(entity.SubEventImMessagePayload{
-			TalkMode: entity.ChatPrivateMode,
+	err := s.PushMessage.Push(ctx, types.ImTopicChat, &types.SubscribeMessage{
+		Event: types.SubEventImMessage,
+		Payload: jsonutil.Encode(types.SubEventImMessagePayload{
+			TalkMode: types.ChatPrivateMode,
 			Message:  jsonutil.Encode(data),
 		}),
 	})
@@ -143,10 +142,10 @@ func (s *Service) CreateToUserPrivateMessage(ctx context.Context, data *model.Ta
 		logger.Errorf("SendToUserPrivateLetter redis push err:%s", err.Error())
 	}
 
-	s.UnreadStorage.Incr(ctx, data.UserId, entity.ChatPrivateMode, data.ToFromId)
+	s.UnreadStorage.Incr(ctx, data.UserId, types.ChatPrivateMode, data.ToFromId)
 
 	// 更新最后一条消息
-	_ = s.MessageStorage.Set(ctx, entity.ChatPrivateMode, data.UserId, data.ToFromId, &cache.LastCacheMessage{
+	_ = s.MessageStorage.Set(ctx, types.ChatPrivateMode, data.UserId, data.ToFromId, &cache.LastCacheMessage{
 		Content:  s.getTextMessage(data.MsgType, data.Extra),
 		Datetime: data.CreatedAt.Format(time.DateTime),
 	})
@@ -158,7 +157,7 @@ func (s *Service) CreatePrivateSysMessage(ctx context.Context, option CreatePriv
 	return s.CreateToUserPrivateMessage(ctx, &model.TalkUserMessage{
 		MsgId:    strutil.NewMsgId(),
 		Sequence: s.Sequence.Get(ctx, option.FromId, true),
-		MsgType:  entity.ChatMsgSysText,
+		MsgType:  types.ChatMsgSysText,
 		UserId:   option.FromId,
 		ToFromId: option.ToFromId,
 		FromId:   0,

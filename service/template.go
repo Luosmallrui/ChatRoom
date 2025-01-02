@@ -1,6 +1,9 @@
 package service
 
-import "chatroom/utils"
+import (
+	"chatroom/resource"
+	"chatroom/utils"
+)
 
 var _ ITemplateService = (*TemplateService)(nil)
 

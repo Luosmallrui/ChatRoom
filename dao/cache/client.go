@@ -1,12 +1,12 @@
 package cache
 
 import (
+	"chatroom/config"
 	"context"
 	"fmt"
 	"strconv"
 
 	"github.com/redis/go-redis/v9"
-	"go-chat/config"
 )
 
 type ClientStorage struct {

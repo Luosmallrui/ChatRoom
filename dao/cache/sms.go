@@ -1,12 +1,12 @@
 package cache
 
 import (
+	"chatroom/pkg/encrypt"
 	"context"
 	"fmt"
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"go-chat/internal/pkg/encrypt"
 )
 
 type SmsStorage struct {

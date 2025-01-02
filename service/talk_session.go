@@ -163,5 +163,4 @@ func (s *TalkSessionService) BatchAddList(ctx context.Context, uid int, values m
 		return
 	}
 
-	s.Source.Db().WithContext(ctx).Exec(fmt.Sprintf("INSERT INTO talk_session ( `talk_mode`, `user_id`, `to_from_id`, created_at, updated_at ) VALUES %s ON DUPLICATE KEY UPDATE is_delete = %d, updated_at = '%s'", strings.Join(data, ","), model.No, ctime))
 }

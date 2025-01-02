@@ -1,12 +1,12 @@
 package cache
 
 import (
+	"chatroom/pkg/jsonutil"
 	"context"
 	"fmt"
 	"time"
 
 	"github.com/redis/go-redis/v9"
-	"go-chat/internal/pkg/jsonutil"
 )
 
 const (

@@ -25,10 +25,11 @@ type UserService struct {
 }
 
 type UserRegisterOpt struct {
-	Nickname string
-	Mobile   string
-	Password string
-	Platform string
+	Nickname string `json:"nickname"`
+	Mobile   string `json:"mobile"`
+	Password string `json:"password"`
+	Platform string `json:"platform"`
+	Email    string `json:"email"`
 }
 
 // Register 注册用户

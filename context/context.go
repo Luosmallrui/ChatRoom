@@ -172,12 +172,12 @@ func (c *Context) IsGuest() bool {
 func (c *Context) Ctx() context.Context {
 	return c.Context.Request.Context()
 }
-
 func initMeta() map[string]any {
 	meta := make(map[string]any)
-	_, _, line, ok := runtime.Caller(2)
+	pc, _, line, ok := runtime.Caller(2)
 	if ok {
 		meta["error_line"] = line
+		meta["error_function"] = runtime.FuncForPC(pc).Name()
 	}
 
 	return meta

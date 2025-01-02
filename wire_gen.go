@@ -9,14 +9,28 @@ package main
 import (
 	"chatroom/config"
 	"chatroom/controller"
+	"chatroom/dao"
+	"chatroom/pkg/client"
 	"chatroom/pkg/core"
+	"chatroom/service"
+	"github.com/google/wire"
 )
 
 // Injectors from wire.go:
 
 func NewHttpInjector(conf *config.Config) *core.AppProvider {
 	engine := core.NewGinServer()
-	userController := controller.NewUserController()
+	redisClient := client.NewRedisClient(conf)
+	db := client.NewMySQLClient(conf)
+	users := dao.NewUsers(db, redisClient)
+	userService := &service.UserService{
+		UsersRepo: users,
+	}
+	userController := &controller.UserController{
+		Redis:       redisClient,
+		UserService: userService,
+		UsersRepo:   users,
+	}
 	controllers := &controller.Controllers{
 		User: userController,
 	}
@@ -27,3 +41,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 	}
 	return appProvider
 }
+
+// wire.go:
+
+var providerSet = wire.NewSet(client.NewMySQLClient, client.NewRedisClient)

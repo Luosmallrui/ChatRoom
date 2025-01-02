@@ -34,8 +34,8 @@ mysql:
   port: 3306
   charset: utf8mb4
   username: root
-  password: xxxx
-  database: go_chat
+  password: 123456
+  database: k
   collation: utf8mb4_general_ci
 
 # Jwt 配置

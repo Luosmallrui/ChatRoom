@@ -11,7 +11,7 @@ type Config struct {
 	App   *App   `json:"app" yaml:"app"`
 	Redis *Redis `json:"redis" yaml:"redis"`
 	MySQL *MySQL `json:"mysql" yaml:"mysql"`
-	//Jwt        *Jwt        `json:"jwt" yaml:"jwt"`
+	Jwt   *Jwt   `json:"jwt" yaml:"jwt"`
 	//Cors       *Cors       `json:"cors" yaml:"cors"`
 	//Log        *Log        `json:"log" yaml:"log"`
 	//Filesystem *Filesystem `json:"filesystem" yaml:"filesystem"`

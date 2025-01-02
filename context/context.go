@@ -8,6 +8,7 @@ import (
 	"runtime"
 
 	"chatroom/context/validator"
+	"chatroom/middleware"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -152,17 +153,16 @@ func (c *Context) UserId() int {
 	return 0
 }
 
-//
-//// JwtSession 返回登录用户的JSession
-//func (c *Context) JwtSession() *middleware.JSession {
-//
-//	data, isOk := c.Context.Get(middleware.JWTSessionConst)
-//	if !isOk {
-//		return nil
-//	}
-//
-//	return data.(*middleware.JSession)
-//}
+// JwtSession 返回登录用户的JSession
+func (c *Context) JwtSession() *middleware.JSession {
+
+	data, isOk := c.Context.Get(middleware.JWTSessionConst)
+	if !isOk {
+		return nil
+	}
+
+	return data.(*middleware.JSession)
+}
 
 // IsGuest 是否是游客(未登录状态)
 func (c *Context) IsGuest() bool {

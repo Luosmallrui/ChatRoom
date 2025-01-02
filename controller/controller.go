@@ -14,6 +14,7 @@ type Controller interface {
 // Controllers 存储所有的 controller
 type Controllers struct {
 	User *UserController
+	Auth *AuthController
 	//Chat    *ChatController
 	//Room    *RoomController
 	// ... 添加其他 controller
@@ -22,6 +23,7 @@ type Controllers struct {
 // RegisterRouters 注册所有路由
 func (c *Controllers) RegisterRouters(r gin.IRouter) {
 	c.User.RegisterRouter(r)
+	c.Auth.RegisterRouter(r)
 	//c.Chat.RegisterRouter(r)
 	//c.Room.RegisterRouter(r)
 	// ... 注册其他 controller 的路由

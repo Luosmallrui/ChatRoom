@@ -10,6 +10,7 @@ import (
 
 var ProviderSet = wire.NewSet(
 	wire.Struct(new(UserController), "*"),
+	wire.Struct(new(AuthController), "*"),
 	dao.NewUsers,
 	service.ProviderSet,
 	wire.Struct(new(Deps), "*"),

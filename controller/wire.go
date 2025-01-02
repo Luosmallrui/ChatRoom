@@ -11,6 +11,7 @@ import (
 var ProviderSet = wire.NewSet(
 	wire.Struct(new(UserController), "*"),
 	wire.Struct(new(AuthController), "*"),
+	wire.Struct(new(SessionController), "*"),
 	dao.NewCaptchaStorage,
 	dao.NewBase64Captcha,
 	dao.NewTokenSessionStorage,

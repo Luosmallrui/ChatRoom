@@ -94,3 +94,145 @@ type TalkRecord struct {
 	Extra      any    `json:"extra"`
 	CreatedAt  string `json:"created_at"`
 }
+
+type TalkSessionItem struct {
+	// ID represents the unique identifier of the talk session
+	ID int32 `json:"id"`
+
+	// TalkMode indicates the chat mode: 1 for private chat, 2 for group chat
+	TalkMode int32 `json:"talk_mode"`
+
+	// ToFromID represents the ID of the other participant
+	ToFromID int32 `json:"to_from_id"`
+
+	// IsTop indicates if the chat is pinned to the top (1 for true, 0 for false)
+	IsTop int32 `json:"is_top"`
+
+	// IsDisturb indicates if "do not disturb" is enabled for the chat (1 for true, 0 for false)
+	IsDisturb int32 `json:"is_disturb"`
+
+	// IsOnline indicates if the other participant is online (1 for true, 0 for false)
+	IsOnline int32 `json:"is_online"`
+
+	// IsRobot indicates if the other participant is a robot (1 for true, 0 for false)
+	IsRobot int32 `json:"is_robot"`
+
+	// Name is the display name of the other participant or group
+	Name string `json:"name"`
+
+	// Avatar is the URL of the avatar for the chat
+	Avatar string `json:"avatar"`
+
+	// Remark is an optional note or alias for the chat
+	Remark string `json:"remark"`
+
+	// UnreadNum represents the number of unread messages in the chat
+	UnreadNum int32 `json:"unread_num"`
+
+	// MsgText contains the most recent message text
+	MsgText string `json:"msg_text"`
+
+	// UpdatedAt is the timestamp of the last update to the chat session
+	UpdatedAt string `json:"updated_at"`
+}
+
+// TalkSessionCreateResponse represents the response parameters for the session creation API.
+type TalkSessionCreateResponse struct {
+	// ID represents the unique identifier of the talk session
+	ID int32 `json:"id"`
+
+	// TalkMode indicates the chat mode: 1 for private chat, 2 for group chat
+	TalkMode int32 `json:"talk_mode"`
+
+	// ToFromID represents the ID of the other participant
+	ToFromID int32 `json:"to_from_id"`
+
+	// IsTop indicates if the chat is pinned to the top (1 for true, 0 for false)
+	IsTop int32 `json:"is_top"`
+
+	// IsDisturb indicates if "do not disturb" is enabled for the chat (1 for true, 0 for false)
+	IsDisturb int32 `json:"is_disturb"`
+
+	// IsOnline indicates if the other participant is online (1 for true, 0 for false)
+	IsOnline int32 `json:"is_online"`
+
+	// IsRobot indicates if the other participant is a robot (1 for true, 0 for false)
+	IsRobot int32 `json:"is_robot"`
+
+	// Name is the display name of the other participant or group
+	Name string `json:"name"`
+
+	// Avatar is the URL of the avatar for the chat
+	Avatar string `json:"avatar"`
+
+	// Remark is an optional note or alias for the chat
+	Remark string `json:"remark"`
+
+	// UnreadNum represents the number of unread messages in the chat
+	UnreadNum int32 `json:"unread_num"`
+
+	// MsgText contains the most recent message text
+	MsgText string `json:"msg_text"`
+
+	// UpdatedAt is the timestamp of the last update to the chat session
+	UpdatedAt string `json:"updated_at"`
+}
+
+// TalkSessionDeleteRequest represents the request parameters for deleting a talk session.
+type TalkSessionDeleteRequest struct {
+	// TalkMode indicates the chat mode (e.g., 1 for private chat, 2 for group chat)
+	TalkMode int32 `json:"talk_mode" binding:"required"`
+
+	// ToFromID represents the ID of the other participant in the chat
+	ToFromID int32 `json:"to_from_id" binding:"required"`
+}
+
+type TalkSessionDeleteResponse struct{}
+
+// TalkSessionTopRequest represents the request parameters for toggling the "top" (pinned) status of a talk session.
+type TalkSessionTopRequest struct {
+	// TalkMode indicates the chat mode (e.g., 1 for private chat, 2 for group chat)
+	TalkMode int32 `json:"talk_mode" binding:"required"`
+
+	// ToFromID represents the ID of the other participant in the chat
+	ToFromID int32 `json:"to_from_id" binding:"required"`
+
+	// Action specifies the action to perform: 1 to pin the session to the top, 2 to unpin
+	Action int32 `json:"action" binding:"required,oneof=1 2"`
+}
+
+type TalkSessionTopResponse struct {
+}
+
+// TalkSessionDisturbRequest represents the request parameters for toggling the "Do Not Disturb" status of a talk session.
+type TalkSessionDisturbRequest struct {
+	// TalkMode indicates the chat mode (e.g., 1 for private chat, 2 for group chat)
+	TalkMode int32 `json:"talk_mode" binding:"required"`
+
+	// ToFromID represents the ID of the other participant in the chat
+	ToFromID int32 `json:"to_from_id" binding:"required"`
+
+	// Action specifies the action to perform: 1 to enable "Do Not Disturb", 2 to disable it
+	Action int32 `json:"action" binding:"oneof=1 2"`
+}
+
+type TalkSessionDisturbResponse struct {
+}
+
+// TalkSessionListResponse represents the response parameters for the session list API.
+type TalkSessionListResponse struct {
+	// Items is a list of talk session items
+	Items []*TalkSessionItem `json:"items"`
+}
+
+// TalkSessionClearUnreadNumRequest represents the request parameters for clearing the unread message count of a talk session.
+type TalkSessionClearUnreadNumRequest struct {
+	// TalkMode indicates the chat mode (e.g., 1 for private chat, 2 for group chat)
+	TalkMode int32 `json:"talk_mode" binding:"required,oneof=1 2"`
+
+	// ToFromID represents the ID of the other participant in the chat
+	ToFromID int32 `json:"to_from_id" binding:"required"`
+}
+
+type TalkSessionClearUnreadNumResponse struct {
+}

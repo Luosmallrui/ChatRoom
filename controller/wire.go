@@ -15,6 +15,7 @@ var ProviderSet = wire.NewSet(
 	wire.Struct(new(Auth), "*"),
 	wire.Struct(new(Session), "*"),
 	wire.Struct(new(Contact), "*"),
+	wire.Struct(new(Group), "*"),
 	dao.ProviderSet,
 	cache.ProviderSet,
 	service.ProviderSet,

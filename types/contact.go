@@ -15,3 +15,16 @@ type ContactItem struct {
 	Remark   string `json:"remark"`   // 备注
 	GroupID  int32  `json:"group_id"` // 联系人分组 ID
 }
+
+// ContactGroupListResponse 表示联系人分组列表响应参数
+type ContactGroupListResponse struct {
+	Items []*ContactGroupItem `json:"items"` // 分组列表
+}
+
+// ContactGroupItem 表示单个联系人分组信息
+type ContactGroupItem struct {
+	ID    int32  `json:"id"`    // 分组 ID
+	Name  string `json:"name"`  // 分组名称
+	Count int32  `json:"count"` // 联系人数
+	Sort  int32  `json:"sort"`  // 分组排序
+}

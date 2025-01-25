@@ -110,21 +110,46 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		ContactService:       contactService,
 		ClientConnectService: clientConnectService,
 	}
+	contactGroup := dao.NewContactGroup(db)
+	contactGroupService := &service.ContactGroupService{
+		Source:           source,
+		ContactGroupRepo: contactGroup,
+	}
 	controllerContact := &controller.Contact{
-		ClientStorage:   clientStorage,
-		ContactRepo:     contact,
-		UsersRepo:       users,
-		OrganizeRepo:    organize,
-		TalkSessionRepo: talkSession,
-		ContactService:  contactService,
-		UserService:     userService,
-		TalkListService: talkSessionService,
+		ClientStorage:       clientStorage,
+		ContactRepo:         contact,
+		UsersRepo:           users,
+		OrganizeRepo:        organize,
+		ContactGroupRepo:    contactGroup,
+		TalkSessionRepo:     talkSession,
+		ContactService:      contactService,
+		UserService:         userService,
+		TalkListService:     talkSessionService,
+		ContactGroupService: contactGroupService,
+	}
+	groupMemberService := &service.GroupMemberService{
+		Source:          source,
+		GroupMemberRepo: groupMember,
+	}
+	controllerGroup := &controller.Group{
+		RedisLock:          redisLock,
+		Repo:               source,
+		UsersRepo:          users,
+		GroupRepo:          group,
+		GroupMemberRepo:    groupMember,
+		TalkSessionRepo:    talkSession,
+		GroupService:       groupService,
+		GroupMemberService: groupMemberService,
+		TalkSessionService: talkSessionService,
+		UserService:        userService,
+		ContactService:     contactService,
 	}
 	controllers := &controller.Controllers{
 		User:    user,
 		Auth:    auth,
 		Session: session,
 		Contact: controllerContact,
+		Group:   controllerGroup,
 	}
 	appProvider := &core.AppProvider{
 		Config:      conf,

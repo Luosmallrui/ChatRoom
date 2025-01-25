@@ -17,7 +17,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type AuthController struct {
+type Auth struct {
 	Config          *config.Config
 	AdminRepo       *dao.Admin
 	UserRepo        *dao.Users
@@ -26,7 +26,7 @@ type AuthController struct {
 	UserService     service.IUserService
 }
 
-func (u *AuthController) RegisterRouter(r gin.IRouter) {
+func (u *Auth) RegisterRouter(r gin.IRouter) {
 	auth := r.Group("/auth")
 	auth.POST("/login", context.HandlerFunc(u.Login))       // 登录
 	auth.POST("/register", context.HandlerFunc(u.Register)) // 注册
@@ -36,7 +36,7 @@ func (u *AuthController) RegisterRouter(r gin.IRouter) {
 }
 
 // Login 登录接口
-func (u *AuthController) Login(ctx *context.Context) error {
+func (u *Auth) Login(ctx *context.Context) error {
 
 	var in types.AuthLoginRequest
 	if err := ctx.Context.ShouldBindJSON(&in); err != nil {
@@ -83,7 +83,7 @@ func (u *AuthController) Login(ctx *context.Context) error {
 }
 
 // Captcha 图形验证码
-func (u *AuthController) Captcha(ctx *context.Context) error {
+func (u *Auth) Captcha(ctx *context.Context) error {
 	voucher, captcha, _, err := u.ICaptcha.Generate()
 	if err != nil {
 		return ctx.ErrorBusiness(err)
@@ -96,7 +96,7 @@ func (u *AuthController) Captcha(ctx *context.Context) error {
 }
 
 // Logout 退出登录接口
-func (u *AuthController) Logout(ctx *context.Context) error {
+func (u *Auth) Logout(ctx *context.Context) error {
 
 	u.toBlackList(ctx)
 
@@ -104,7 +104,7 @@ func (u *AuthController) Logout(ctx *context.Context) error {
 }
 
 // Register 注册接口
-func (u *AuthController) Register(ctx *context.Context) error {
+func (u *Auth) Register(ctx *context.Context) error {
 	in := &types.AuthRegisterRequest{}
 	if err := ctx.Context.ShouldBindJSON(in); err != nil {
 		return ctx.InvalidParams(err)
@@ -132,7 +132,7 @@ func (u *AuthController) Register(ctx *context.Context) error {
 }
 
 // Refresh Token 刷新接口
-func (u *AuthController) Refresh(ctx *context.Context) error {
+func (u *Auth) Refresh(ctx *context.Context) error {
 
 	u.toBlackList(ctx)
 
@@ -144,7 +144,7 @@ func (u *AuthController) Refresh(ctx *context.Context) error {
 }
 
 // 设置黑名单
-func (u *AuthController) toBlackList(ctx *context.Context) {
+func (u *Auth) toBlackList(ctx *context.Context) {
 	session := ctx.JwtSession()
 	if session != nil {
 		if ex := session.ExpiresAt - time.Now().Unix(); ex > 0 {
@@ -153,7 +153,7 @@ func (u *AuthController) toBlackList(ctx *context.Context) {
 	}
 }
 
-func (u *AuthController) token(uid int) string {
+func (u *Auth) token(uid int) string {
 
 	expiresAt := time.Now().Add(time.Second * time.Duration(u.Config.Jwt.ExpiresTime))
 
@@ -169,7 +169,7 @@ func (u *AuthController) token(uid int) string {
 }
 
 // Forget 账号找回接口
-func (u *AuthController) Forget(ctx *context.Context) error {
+func (u *Auth) Forget(ctx *context.Context) error {
 	in := &types.AuthForgetRequest{}
 	if err := ctx.Context.ShouldBindJSON(in); err != nil {
 		return ctx.InvalidParams(err)

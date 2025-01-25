@@ -15,7 +15,7 @@ import (
 	"strings"
 )
 
-type SessionController struct {
+type Session struct {
 	RedisLock            *cache.RedisLock
 	MessageStorage       *cache.MessageStorage
 	ClientStorage        *cache.ClientStorage
@@ -33,7 +33,7 @@ type SessionController struct {
 	ClientConnectService service.IClientConnectService
 }
 
-func (c *SessionController) RegisterRouter(r gin.IRouter) {
+func (c *Session) RegisterRouter(r gin.IRouter) {
 	talk := r.Group("/api/v1/talk")
 	talk.GET("/list", context.HandlerFunc(c.List))        // 会话列表
 	talk.POST("/create", context.HandlerFunc(c.Create))   // 创建会话
@@ -48,7 +48,7 @@ func (c *SessionController) RegisterRouter(r gin.IRouter) {
 }
 
 // Create 创建会话列表
-func (c *SessionController) Create(ctx *context.Context) error {
+func (c *Session) Create(ctx *context.Context) error {
 	var (
 		in    = &types.TalkSessionCreateRequest{}
 		uid   = ctx.UserId()
@@ -145,7 +145,7 @@ func (c *SessionController) Create(ctx *context.Context) error {
 }
 
 // Delete 删除列表
-func (c *SessionController) Delete(ctx *context.Context) error {
+func (c *Session) Delete(ctx *context.Context) error {
 	in := &types.TalkSessionDeleteRequest{}
 	if err := ctx.Context.ShouldBind(in); err != nil {
 		return ctx.InvalidParams(err)
@@ -159,7 +159,7 @@ func (c *SessionController) Delete(ctx *context.Context) error {
 }
 
 // Top 置顶列表
-func (c *SessionController) Top(ctx *context.Context) error {
+func (c *Session) Top(ctx *context.Context) error {
 	in := &types.TalkSessionTopRequest{}
 	if err := ctx.Context.ShouldBind(in); err != nil {
 		return ctx.InvalidParams(err)
@@ -178,7 +178,7 @@ func (c *SessionController) Top(ctx *context.Context) error {
 }
 
 // Disturb 会话免打扰
-func (c *SessionController) Disturb(ctx *context.Context) error {
+func (c *Session) Disturb(ctx *context.Context) error {
 	in := &types.TalkSessionDisturbRequest{}
 	if err := ctx.Context.ShouldBind(in); err != nil {
 		return ctx.InvalidParams(err)
@@ -197,7 +197,7 @@ func (c *SessionController) Disturb(ctx *context.Context) error {
 }
 
 // List 会话列表
-func (c *SessionController) List(ctx *context.Context) error {
+func (c *Session) List(ctx *context.Context) error {
 	uid := ctx.UserId()
 
 	data, err := c.TalkSessionService.List(ctx.Ctx(), uid)
@@ -255,7 +255,7 @@ func (c *SessionController) List(ctx *context.Context) error {
 	return ctx.Success(&types.TalkSessionListResponse{Items: items})
 }
 
-func (c *SessionController) ClearUnreadMessage(ctx *context.Context) error {
+func (c *Session) ClearUnreadMessage(ctx *context.Context) error {
 	in := &types.TalkSessionClearUnreadNumRequest{}
 	if err := ctx.Context.ShouldBind(in); err != nil {
 		return ctx.InvalidParams(err)

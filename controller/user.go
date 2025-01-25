@@ -10,21 +10,21 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type UserController struct {
+type User struct {
 	Redis        *redis.Client
 	UserService  service.IUserService
 	UsersRepo    *dao.Users
 	OrganizeRepo *dao.Organize
 }
 
-func (u *UserController) RegisterRouter(r gin.IRouter) {
+func (u *User) RegisterRouter(r gin.IRouter) {
 	g := r.Group("/api/v1/user")
 	g.GET("/list", context.HandlerFunc(u.Detail))
 	g.GET("/setting", context.HandlerFunc(u.Setting))
 }
 
 // Detail 个人用户信息
-func (u *UserController) Detail(ctx *context.Context) error {
+func (u *User) Detail(ctx *context.Context) error {
 	user, err := u.UsersRepo.FindByIdWithCache(ctx.Ctx(), ctx.UserId())
 	if err != nil {
 		return ctx.Error(err.Error())
@@ -34,7 +34,7 @@ func (u *UserController) Detail(ctx *context.Context) error {
 }
 
 // Setting 用户设置
-func (u *UserController) Setting(ctx *context.Context) error {
+func (u *User) Setting(ctx *context.Context) error {
 
 	//uid := ctx.UserId()
 	uid := 3

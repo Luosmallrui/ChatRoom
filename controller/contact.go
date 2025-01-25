@@ -6,6 +6,7 @@ import (
 	"chatroom/dao/cache"
 	"chatroom/service"
 	"chatroom/types"
+	"github.com/gin-gonic/gin"
 )
 
 type Contact struct {
@@ -20,11 +21,16 @@ type Contact struct {
 	//Message         message2.IService
 }
 
-func (c *Contact) List(ctx *context.Context) error {
+func (u *Contact) RegisterRouter(r gin.IRouter) {
+	c := r.Group("/api/v1/contact")
+	c.POST("/list", context.HandlerFunc(u.List)) // 获取好友列表
+}
+
+func (u *Contact) List(ctx *context.Context) error {
 	userId := ctx.UserId()
 	userId = 3
 
-	list, err := c.ContactService.List(ctx.Ctx(), userId)
+	list, err := u.ContactService.List(ctx.Ctx(), userId)
 	if err != nil {
 		return ctx.ErrorBusiness(err.Error())
 	}

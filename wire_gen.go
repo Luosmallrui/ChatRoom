@@ -29,7 +29,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		UsersRepo: users,
 	}
 	organize := dao.NewOrganize(db)
-	userController := &controller.UserController{
+	user := &controller.User{
 		Redis:        redisClient,
 		UserService:  userService,
 		UsersRepo:    users,
@@ -39,7 +39,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 	jwtTokenStorage := dao.NewTokenSessionStorage(redisClient)
 	captchaStorage := dao.NewCaptchaStorage(redisClient)
 	captcha := dao.NewBase64Captcha(captchaStorage)
-	authController := &controller.AuthController{
+	auth := &controller.Auth{
 		Config:          conf,
 		AdminRepo:       admin,
 		UserRepo:        users,
@@ -93,7 +93,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 	clientConnectService := &service.ClientConnectService{
 		Storage: clientStorage,
 	}
-	sessionController := &controller.SessionController{
+	session := &controller.Session{
 		RedisLock:            redisLock,
 		MessageStorage:       messageStorage,
 		ClientStorage:        clientStorage,
@@ -110,10 +110,21 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		ContactService:       contactService,
 		ClientConnectService: clientConnectService,
 	}
+	controllerContact := &controller.Contact{
+		ClientStorage:   clientStorage,
+		ContactRepo:     contact,
+		UsersRepo:       users,
+		OrganizeRepo:    organize,
+		TalkSessionRepo: talkSession,
+		ContactService:  contactService,
+		UserService:     userService,
+		TalkListService: talkSessionService,
+	}
 	controllers := &controller.Controllers{
-		User:    userController,
-		Auth:    authController,
-		Session: sessionController,
+		User:    user,
+		Auth:    auth,
+		Session: session,
+		Contact: controllerContact,
 	}
 	appProvider := &core.AppProvider{
 		Config:      conf,

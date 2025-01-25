@@ -11,9 +11,10 @@ import (
 )
 
 var ProviderSet = wire.NewSet(
-	wire.Struct(new(UserController), "*"),
-	wire.Struct(new(AuthController), "*"),
-	wire.Struct(new(SessionController), "*"),
+	wire.Struct(new(User), "*"),
+	wire.Struct(new(Auth), "*"),
+	wire.Struct(new(Session), "*"),
+	wire.Struct(new(Contact), "*"),
 	dao.ProviderSet,
 	cache.ProviderSet,
 	service.ProviderSet,

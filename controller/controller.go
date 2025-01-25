@@ -4,6 +4,7 @@ import (
 	"chatroom/service"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
+	"net/http"
 )
 
 // Controller 接口定义所有 controller 必须实现的方法
@@ -23,6 +24,7 @@ type Controllers struct {
 
 // RegisterRouters 注册所有路由
 func (c *Controllers) RegisterRouters(r gin.IRouter) {
+	r.Use(CORSMiddleware())
 	c.User.RegisterRouter(r)
 	c.Auth.RegisterRouter(r)
 	c.Session.RegisterRouter(r)
@@ -36,4 +38,22 @@ type Deps struct {
 	//// 还可以添加其他依赖，例如 logger、数据库连接等
 	//Logger *log.Logger
 	UserService service.IUserService
+}
+
+func CORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 设置 CORS 头
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*") // 允许所有来源
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Content-Length, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+
+		// 对于 OPTIONS 请求，直接返回 204
+		if c.Request.Method == http.MethodOptions {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+
+		c.Next()
+	}
 }

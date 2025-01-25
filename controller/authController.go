@@ -4,10 +4,10 @@ import (
 	"chatroom/context"
 	"chatroom/dao"
 	jwt "chatroom/middleware"
-	"chatroom/pkg/encrypt"
 	"chatroom/service"
 	"chatroom/types"
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"strconv"
 	"time"
@@ -47,7 +47,7 @@ func (u *AuthController) Login(ctx *context.Context) error {
 	//	return ctx.InvalidParams("验证码填写不正确")
 	//}
 
-	adminInfo, err := u.UserRepo.FindByWhere(ctx.Ctx(), "nickname = ? ", in.Username)
+	adminInfo, err := u.UserRepo.FindByWhere(ctx.Ctx(), "mobile = ? ", in.Mobile)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return ctx.InvalidParams("账号不存在或密码填写错误!")
@@ -55,9 +55,9 @@ func (u *AuthController) Login(ctx *context.Context) error {
 
 		return ctx.Error(err.Error())
 	}
-	if !encrypt.VerifyPassword(adminInfo.Password, in.Password) {
-		return ctx.InvalidParams("账号不存在或密码填写错误!")
-	}
+	//if !encrypt.VerifyPassword(adminInfo.Password, in.Password) {
+	//	return ctx.InvalidParams("账号不存在或密码填写错误!")
+	//}
 
 	//if adminInfo.Status != model.AdminStatusNormal {
 	//	return ctx.ErrorBusiness("账号已被管理员禁用，如有问题请联系管理员！")
@@ -109,6 +109,7 @@ func (u *AuthController) Register(ctx *context.Context) error {
 	if err := ctx.Context.ShouldBindJSON(in); err != nil {
 		return ctx.InvalidParams(err)
 	}
+	fmt.Println(in)
 
 	//// 验证短信验证码是否正确
 	//if !u.SmsService.Verify(ctx.Ctx(), entity.SmsRegisterChannel, in.Mobile, in.SmsCode) {

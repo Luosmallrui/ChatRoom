@@ -146,9 +146,9 @@ func (c *Context) Raw(value string) error {
 // UserId 返回登录用户的UID
 func (c *Context) UserId() int {
 
-	//if session := c.JwtSession(); session != nil {
-	//	return session.Uid
-	//}
+	if session := c.JwtSession(); session != nil {
+		return session.Uid
+	}
 
 	return 0
 }

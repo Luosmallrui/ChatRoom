@@ -34,7 +34,7 @@ type SessionController struct {
 }
 
 func (c *SessionController) RegisterRouter(r gin.IRouter) {
-	talk := r.Group("/talk")
+	talk := r.Group("/api/v1/talk")
 	talk.GET("/list", context.HandlerFunc(c.List))        // 会话列表
 	talk.POST("/create", context.HandlerFunc(c.Create))   // 创建会话
 	talk.POST("/delete", context.HandlerFunc(c.Delete))   // 删除会话

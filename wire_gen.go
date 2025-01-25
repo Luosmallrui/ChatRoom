@@ -10,6 +10,8 @@ import (
 	"chatroom/config"
 	"chatroom/controller"
 	"chatroom/dao"
+	"chatroom/dao/cache"
+	"chatroom/pkg/business"
 	"chatroom/pkg/client"
 	"chatroom/pkg/core"
 	"chatroom/service"
@@ -26,10 +28,12 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 	userService := &service.UserService{
 		UsersRepo: users,
 	}
+	organize := dao.NewOrganize(db)
 	userController := &controller.UserController{
-		Redis:       redisClient,
-		UserService: userService,
-		UsersRepo:   users,
+		Redis:        redisClient,
+		UserService:  userService,
+		UsersRepo:    users,
+		OrganizeRepo: organize,
 	}
 	admin := dao.NewAdmin(db)
 	jwtTokenStorage := dao.NewTokenSessionStorage(redisClient)
@@ -43,9 +47,73 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		ICaptcha:        captcha,
 		UserService:     userService,
 	}
+	redisLock := cache.NewRedisLock(redisClient)
+	messageStorage := cache.NewMessageStorage(redisClient)
+	serverStorage := cache.NewSidStorage(redisClient)
+	clientStorage := cache.NewClientStorage(redisClient, conf, serverStorage)
+	unreadStorage := cache.NewUnreadStorage(redisClient)
+	contactRemark := cache.NewContactRemark(redisClient)
+	relation := cache.NewRelation(redisClient)
+	contact := dao.NewContact(db, contactRemark, relation)
+	group := dao.NewGroup(db)
+	source := dao.NewSource(db, redisClient)
+	groupMember := dao.NewGroupMember(db, relation)
+	talkService := &service.TalkService{
+		Source:          source,
+		GroupMemberRepo: groupMember,
+	}
+	talkSession := dao.NewTalkSession(db)
+	talkSessionService := &service.TalkSessionService{
+		Source:          source,
+		TalkSessionRepo: talkSession,
+	}
+	sequence := cache.NewSequence(redisClient)
+	daoSequence := dao.NewSequence(db, sequence)
+	pushMessage := &business.PushMessage{
+		Redis: redisClient,
+	}
+	groupService := &service.GroupService{
+		Source:          source,
+		GroupRepo:       group,
+		GroupMemberRepo: groupMember,
+		Relation:        relation,
+		Sequence:        daoSequence,
+		PushMessage:     pushMessage,
+	}
+	authService := &service.AuthService{
+		OrganizeRepo:    organize,
+		ContactRepo:     contact,
+		GroupRepo:       group,
+		GroupMemberRepo: groupMember,
+	}
+	contactService := &service.ContactService{
+		Source:      source,
+		ContactRepo: contact,
+	}
+	clientConnectService := &service.ClientConnectService{
+		Storage: clientStorage,
+	}
+	sessionController := &controller.SessionController{
+		RedisLock:            redisLock,
+		MessageStorage:       messageStorage,
+		ClientStorage:        clientStorage,
+		UnreadStorage:        unreadStorage,
+		ContactRemark:        contactRemark,
+		ContactRepo:          contact,
+		UsersRepo:            users,
+		GroupRepo:            group,
+		TalkService:          talkService,
+		TalkSessionService:   talkSessionService,
+		UserService:          userService,
+		GroupService:         groupService,
+		AuthService:          authService,
+		ContactService:       contactService,
+		ClientConnectService: clientConnectService,
+	}
 	controllers := &controller.Controllers{
-		User: userController,
-		Auth: authController,
+		User:    userController,
+		Auth:    authController,
+		Session: sessionController,
 	}
 	appProvider := &core.AppProvider{
 		Config:      conf,

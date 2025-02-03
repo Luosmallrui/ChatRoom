@@ -13,16 +13,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func init() {
+	gin.SetMode(gin.DebugMode)
+}
+
 // NewRouter 初始化配置路由
 func NewRouter(conf *config.Config, handle *handler.Handler, storage *cache.JwtTokenStorage) *gin.Engine {
 
-	router := gin.New()
+	router := gin.Default()
 	router.Use(gin.RecoveryWithWriter(gin.DefaultWriter, func(c *gin.Context, err any) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, map[string]any{"code": 500, "msg": "系统错误，请重试!!!"})
 	}))
 
 	// 授权验证中间件
-	authorize := middleware.Auth(conf.Jwt.Secret, "api", storage)
+	authorize := middleware.Auth(conf.Jwt.Secret, "admin", storage)
 
 	// 查看客户端连接状态
 	router.GET("/wss/connect/detail", func(ctx *gin.Context) {

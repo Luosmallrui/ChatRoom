@@ -15,7 +15,7 @@ app:
 
 server:
   http: 8082
-  websocket: 9502
+  websocket: 8083
 
 # 日志配置
 log:

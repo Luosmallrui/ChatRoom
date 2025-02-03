@@ -195,8 +195,6 @@ func (u *Contact) List(ctx *context.Context) error {
 func (u *Contact) GroupList(ctx *context.Context) error {
 
 	uid := ctx.UserId()
-	uid = 3
-
 	items := make([]*types.ContactGroupItem, 0)
 
 	count, err := u.ContactRepo.FindCount(ctx.Ctx(), "user_id = ? and status = ?", uid, model.Yes)

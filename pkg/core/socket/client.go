@@ -160,6 +160,7 @@ func (c *Client) Write(data *ClientResponse) error {
 	if data.IsAck && data.Ackid == "" {
 		data.Ackid = strings.ReplaceAll(uuid.New().String(), "-", "")
 	}
+	fmt.Println(data)
 
 	c.outChan <- data
 
@@ -225,6 +226,8 @@ func (c *Client) init() error {
 			"ping_timeout":  heartbeatTimeout,
 		}},
 	)
+	fmt.Println(555)
+	fmt.Println(c.uid)
 
 	// 启动协程处理推送信息
 	go c.loopWrite()

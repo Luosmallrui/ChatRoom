@@ -39,9 +39,10 @@ func (u *Contact) RegisterRouter(r gin.IRouter) {
 	authorize := middleware.Auth(u.Config.Jwt.Secret, "admin", u.Session)
 	r.Use(authorize)
 	c := r.Group("/api/v1/contact")
-	c.GET("/list", context.HandlerFunc(u.List))     // 获取好友列表
-	c.GET("/search", context.HandlerFunc(u.Search)) //查找好友
-	c.GET("/detail", context.HandlerFunc(u.Detail)) //用户详情信息
+	c.GET("/list", context.HandlerFunc(u.List))                   // 获取好友列表
+	c.GET("/search", context.HandlerFunc(u.Search))               //查找好友
+	c.GET("/detail", context.HandlerFunc(u.Detail))               //用户详情信息
+	c.POST("/online-status", context.HandlerFunc(u.OnlineStatus)) //联系人在线状态
 
 	c.GET("/group/list", context.HandlerFunc(u.GroupList)) // 联系人分组列表
 
@@ -271,4 +272,22 @@ func (u *Contact) Detail(ctx *context.Context) error {
 	}
 
 	return ctx.Success(&data)
+}
+
+// OnlineStatus 获取联系人在线状态
+func (c *Contact) OnlineStatus(ctx *context.Context) error {
+	in := &types.ContactOnlineStatusRequest{}
+	if err := ctx.Context.ShouldBind(in); err != nil {
+		return ctx.InvalidParams(err)
+	}
+
+	resp := &types.ContactOnlineStatusResponse{
+		OnlineStatus: 1,
+	}
+
+	if c.ClientStorage.IsOnline(ctx.Ctx(), types.ImChannelChat, fmt.Sprintf("%d", in.UserID)) {
+		resp.OnlineStatus = 2
+	}
+
+	return ctx.Success(resp)
 }

@@ -90,3 +90,11 @@ type ContactApplyListItem struct {
 	Avatar    string `json:"avatar"`     // 好友头像URL
 	CreatedAt string `json:"created_at"` // 申请创建时间
 }
+
+type ContactOnlineStatusRequest struct {
+	UserID int32 `json:"user_id"` // 用户ID，必填
+}
+
+type ContactOnlineStatusResponse struct {
+	OnlineStatus int32 `json:"online_status"` // 在线状态 [1:离线; 2:在线]
+}

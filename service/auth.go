@@ -6,6 +6,7 @@ import (
 	"chatroom/types"
 	"context"
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -38,6 +39,7 @@ func (a *AuthService) IsAuth(ctx context.Context, opt *AuthOption) error {
 		} else if isOk {
 			return nil
 		}
+		fmt.Println(opt.UserId, opt.ToFromId)
 
 		if a.ContactRepo.IsFriend(ctx, opt.UserId, opt.ToFromId, false) {
 			return nil

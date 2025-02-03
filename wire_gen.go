@@ -49,6 +49,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		UserService:     userService,
 	}
 	redisLock := cache.NewRedisLock(redisClient)
+	cacheJwtTokenStorage := cache.NewTokenSessionStorage(redisClient)
 	messageStorage := cache.NewMessageStorage(redisClient)
 	serverStorage := cache.NewSidStorage(redisClient)
 	clientStorage := cache.NewClientStorage(redisClient, conf, serverStorage)
@@ -96,6 +97,8 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 	}
 	session := &controller.Session{
 		RedisLock:            redisLock,
+		Session:              cacheJwtTokenStorage,
+		Config:               conf,
 		MessageStorage:       messageStorage,
 		ClientStorage:        clientStorage,
 		UnreadStorage:        unreadStorage,
@@ -111,7 +114,6 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		ContactService:       contactService,
 		ClientConnectService: clientConnectService,
 	}
-	cacheJwtTokenStorage := cache.NewTokenSessionStorage(redisClient)
 	contactGroup := dao.NewContactGroup(db)
 	contactGroupService := &service.ContactGroupService{
 		Source:           source,

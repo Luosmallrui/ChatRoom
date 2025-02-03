@@ -1,9 +1,11 @@
 package controller
 
 import (
+	"chatroom/config"
 	"chatroom/context"
 	"chatroom/dao"
 	"chatroom/dao/cache"
+	"chatroom/middleware"
 	"chatroom/model"
 	"chatroom/pkg/encrypt"
 	"chatroom/pkg/timeutil"
@@ -17,6 +19,8 @@ import (
 
 type Session struct {
 	RedisLock            *cache.RedisLock
+	Session              *cache.JwtTokenStorage
+	Config               *config.Config
 	MessageStorage       *cache.MessageStorage
 	ClientStorage        *cache.ClientStorage
 	UnreadStorage        *cache.UnreadStorage
@@ -34,6 +38,8 @@ type Session struct {
 }
 
 func (c *Session) RegisterRouter(r gin.IRouter) {
+	authorize := middleware.Auth(c.Config.Jwt.Secret, "admin", c.Session)
+	r.Use(authorize)
 	talk := r.Group("/api/v1/talk")
 	talk.GET("/list", context.HandlerFunc(c.List))        // 会话列表
 	talk.POST("/create", context.HandlerFunc(c.Create))   // 创建会话
@@ -72,12 +78,14 @@ func (c *Session) Create(ctx *context.Context) error {
 	if !c.RedisLock.Lock(ctx.Ctx(), key, 10) {
 		return ctx.ErrorBusiness("创建失败")
 	}
-
-	if c.AuthService.IsAuth(ctx.Ctx(), &service.AuthOption{
+	err := c.AuthService.IsAuth(ctx.Ctx(), &service.AuthOption{
 		TalkType: int(in.TalkMode),
 		UserId:   uid,
 		ToFromId: int(in.ToFromID),
-	}) != nil {
+	})
+
+	if err != nil {
+		fmt.Println(err)
 		return ctx.ErrorBusiness("暂无权限！")
 	}
 

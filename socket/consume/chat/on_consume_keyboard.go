@@ -2,8 +2,8 @@ package chat
 
 import (
 	"chatroom/pkg/core"
+	"chatroom/pkg/core/socket"
 	"chatroom/pkg/logger"
-	"chatroom/socket"
 	"chatroom/types"
 	"context"
 	"encoding/json"

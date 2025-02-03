@@ -2,12 +2,11 @@ package handler
 
 import (
 	"chatroom/context"
+	"chatroom/pkg/core/socket"
+	"chatroom/pkg/core/socket/adapter"
 	"chatroom/service"
 	"chatroom/socket/handler/event"
 	"log"
-
-	"chatroom/socket"
-	"chatroom/socket/adapter"
 )
 
 type ChatChannel struct {

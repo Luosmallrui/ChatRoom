@@ -2,8 +2,9 @@ package chat
 
 import (
 	"chatroom/model"
+	"chatroom/pkg/core"
+	"chatroom/pkg/core/socket"
 	"chatroom/pkg/logger"
-	"chatroom/socket"
 	"chatroom/types"
 	"context"
 	"encoding/json"
@@ -18,7 +19,7 @@ func (h *Handler) onConsumeGroupJoin(ctx context.Context, body []byte) {
 		return
 	}
 
-	sid := server.ID()
+	sid := core.GetServerId()
 	now := time.Now()
 	for _, uid := range in.Uids {
 		ids, _ := h.ClientConnectService.GetUidFromClientIds(ctx, sid, socket.Session.Chat.Name(), uid)
@@ -48,7 +49,7 @@ func (h *Handler) onConsumeGroupApply(ctx context.Context, body []byte) {
 
 	var clientIds []int64
 	for _, member := range members {
-		ids, _ := h.ClientConnectService.GetUidFromClientIds(ctx, server.ID(), socket.Session.Chat.Name(), member.UserId)
+		ids, _ := h.ClientConnectService.GetUidFromClientIds(ctx, core.GetServerId(), socket.Session.Chat.Name(), member.UserId)
 		clientIds = append(clientIds, ids...)
 	}
 

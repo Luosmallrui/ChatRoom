@@ -5,7 +5,7 @@ import (
 	"chatroom/context"
 	"chatroom/dao/cache"
 	"chatroom/middleware"
-	"chatroom/socket"
+	"chatroom/pkg/core/socket"
 	"chatroom/socket/handler"
 	"net/http"
 	"net/http/pprof"

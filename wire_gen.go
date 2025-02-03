@@ -14,8 +14,19 @@ import (
 	"chatroom/pkg/business"
 	"chatroom/pkg/client"
 	"chatroom/pkg/core"
+	socket2 "chatroom/pkg/core/socket"
 	"chatroom/service"
 	"chatroom/service/message"
+	"chatroom/socket"
+	"chatroom/socket/consume"
+	chat2 "chatroom/socket/consume/chat"
+	example2 "chatroom/socket/consume/example"
+	"chatroom/socket/handler"
+	"chatroom/socket/handler/event"
+	"chatroom/socket/handler/event/chat"
+	"chatroom/socket/handler/event/example"
+	"chatroom/socket/process"
+	"chatroom/socket/router"
 	"github.com/google/wire"
 )
 
@@ -228,6 +239,115 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 	return appProvider
 }
 
+func NewSocketInjector(conf *config.Config) *socket.AppProvider {
+	redisClient := client.NewRedisClient(conf)
+	serverStorage := cache.NewSidStorage(redisClient)
+	clientStorage := cache.NewClientStorage(redisClient, conf, serverStorage)
+	clientConnectService := &service.ClientConnectService{
+		Storage: clientStorage,
+	}
+	db := client.NewMySQLClient(conf)
+	relation := cache.NewRelation(redisClient)
+	groupMember := dao.NewGroupMember(db, relation)
+	source := dao.NewSource(db, redisClient)
+	groupMemberService := &service.GroupMemberService{
+		Source:          source,
+		GroupMemberRepo: groupMember,
+	}
+	pushMessage := &business.PushMessage{
+		Redis: redisClient,
+	}
+	chatHandler := &chat.Handler{
+		Redis:         redisClient,
+		Source:        source,
+		MemberService: groupMemberService,
+		PushMessage:   pushMessage,
+	}
+	roomStorage := socket2.NewRoomStorage()
+	chatEvent := &event.ChatEvent{
+		Redis:           redisClient,
+		GroupMemberRepo: groupMember,
+		MemberService:   groupMemberService,
+		Handler:         chatHandler,
+		RoomStorage:     roomStorage,
+		PushMessage:     pushMessage,
+	}
+	chatChannel := &handler.ChatChannel{
+		Storage: clientConnectService,
+		Event:   chatEvent,
+	}
+	exampleHandler := example.NewHandler()
+	exampleEvent := &event.ExampleEvent{
+		Handler: exampleHandler,
+	}
+	exampleChannel := &handler.ExampleChannel{
+		Storage: clientStorage,
+		Event:   exampleEvent,
+	}
+	handlerHandler := &handler.Handler{
+		Chat:        chatChannel,
+		Example:     exampleChannel,
+		Config:      conf,
+		RoomStorage: roomStorage,
+	}
+	jwtTokenStorage := cache.NewTokenSessionStorage(redisClient)
+	engine := router.NewRouter(conf, handlerHandler, jwtTokenStorage)
+	healthSubscribe := process.NewHealthSubscribe(serverStorage)
+	organize := dao.NewOrganize(db)
+	users := dao.NewUsers(db, redisClient)
+	vote := cache.NewVote(redisClient)
+	groupVote := dao.NewGroupVote(db, vote)
+	talkUserMessage := dao.NewTalkRecordFriend(db)
+	talkGroupMessage := dao.NewTalkRecordGroup(db)
+	talkGroupMessageDel := dao.NewTalkRecordGroupDel(db)
+	talkRecordService := &service.TalkRecordService{
+		Source:                source,
+		TalkVoteCache:         vote,
+		TalkRecordsVoteRepo:   groupVote,
+		GroupMemberRepo:       groupMember,
+		TalkRecordFriendRepo:  talkUserMessage,
+		TalkRecordGroupRepo:   talkGroupMessage,
+		TalkRecordsDeleteRepo: talkGroupMessageDel,
+	}
+	contactRemark := cache.NewContactRemark(redisClient)
+	contact := dao.NewContact(db, contactRemark, relation)
+	contactService := &service.ContactService{
+		Source:      source,
+		ContactRepo: contact,
+	}
+	handler2 := &chat2.Handler{
+		Config:               conf,
+		OrganizeRepo:         organize,
+		UserRepo:             users,
+		Source:               source,
+		TalkRecordsService:   talkRecordService,
+		ContactService:       contactService,
+		ClientConnectService: clientConnectService,
+		RoomStorage:          roomStorage,
+	}
+	chatSubscribe := consume.NewChatSubscribe(handler2)
+	handler3 := example2.NewHandler()
+	exampleSubscribe := consume.NewExampleSubscribe(handler3)
+	messageSubscribe := process.NewMessageSubscribe(redisClient, chatSubscribe, exampleSubscribe)
+	subServers := &process.SubServers{
+		HealthSubscribe:  healthSubscribe,
+		MessageSubscribe: messageSubscribe,
+	}
+	server := process.NewServer(subServers)
+	emailClient := client.NewEmailClient(conf)
+	providers := &client.Providers{
+		EmailClient: emailClient,
+	}
+	appProvider := &socket.AppProvider{
+		Config:    conf,
+		Engine:    engine,
+		Coroutine: server,
+		Handler:   handlerHandler,
+		Providers: providers,
+	}
+	return appProvider
+}
+
 // wire.go:
 
-var providerSet = wire.NewSet(client.NewMySQLClient, client.NewRedisClient, config.NewFilesystem)
+var ProviderSet = wire.NewSet(client.NewMySQLClient, client.NewEmailClient, client.NewRedisClient, config.NewFilesystem, wire.Struct(new(client.Providers), "*"))

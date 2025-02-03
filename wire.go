@@ -1,4 +1,5 @@
 //go:build wireinject
+// +build wireinject
 
 package main
 
@@ -7,7 +8,6 @@ import (
 	"chatroom/controller"
 	"chatroom/dao"
 	"chatroom/dao/cache"
-	"chatroom/pkg/business"
 	"chatroom/pkg/client"
 	"chatroom/pkg/core"
 	"chatroom/service"
@@ -15,7 +15,7 @@ import (
 	"github.com/google/wire"
 )
 
-var providerSet = wire.NewSet(
+var ProviderSet = wire.NewSet(
 	client.NewMySQLClient,
 	client.NewEmailClient,
 	client.NewRedisClient,
@@ -37,7 +37,7 @@ var providerSet = wire.NewSet(
 func NewHttpInjector(conf *config.Config) *core.AppProvider {
 	panic(
 		wire.Build(
-			providerSet,
+			ProviderSet,
 			core.ProviderSet,
 			controller.ProviderSet,
 		),
@@ -49,10 +49,9 @@ func NewSocketInjector(conf *config.Config) *socket.AppProvider {
 		wire.Build(
 			dao.ProviderSet,
 			cache.ProviderSet, // 注入 Cache 依赖
-			providerSet,
+			ProviderSet,
 			socket.ProviderSet,
 			service.ProviderSet,
-			business.ProviderSet,
 		),
 	)
 }

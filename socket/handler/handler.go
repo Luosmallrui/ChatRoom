@@ -2,7 +2,7 @@ package handler
 
 import (
 	"chatroom/config"
-	"chatroom/socket"
+	"chatroom/pkg/core/socket"
 )
 
 type Handler struct {

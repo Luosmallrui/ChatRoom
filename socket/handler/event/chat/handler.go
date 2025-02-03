@@ -3,11 +3,11 @@ package chat
 import (
 	"chatroom/dao"
 	"chatroom/pkg/business"
+	"chatroom/pkg/core/socket"
 	"chatroom/service"
 	"context"
 	"log"
 
-	"chatroom/socket"
 	"github.com/redis/go-redis/v9"
 )
 

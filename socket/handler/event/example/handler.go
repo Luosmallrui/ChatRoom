@@ -1,11 +1,11 @@
 package example
 
 import (
+	"chatroom/pkg/core/socket"
 	"context"
 	"fmt"
 
 	"chatroom/pkg/logger"
-	"chatroom/socket"
 )
 
 type Handler struct {

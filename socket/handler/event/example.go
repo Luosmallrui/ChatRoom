@@ -1,7 +1,7 @@
 package event
 
 import (
-	"chatroom/socket"
+	"chatroom/pkg/core/socket"
 	"chatroom/socket/handler/event/example"
 	"context"
 	"fmt"

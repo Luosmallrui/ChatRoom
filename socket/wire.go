@@ -1,6 +1,11 @@
+//go:build wireinject
+
 package socket
 
+//chatroom/socket/wire.go
 import (
+	"chatroom/pkg/business"
+	"chatroom/pkg/core/socket"
 	"chatroom/socket/consume"
 	"chatroom/socket/handler"
 	"chatroom/socket/handler/event"
@@ -11,8 +16,10 @@ import (
 )
 
 var ProviderSet = wire.NewSet(
+	//core.NewGinServer,
+	business.ProviderSet,
 	router.NewRouter,
-
+	socket.NewRoomStorage,
 	wire.Struct(new(handler.Handler), "*"),
 
 	// process

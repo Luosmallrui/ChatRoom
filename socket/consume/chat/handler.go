@@ -2,7 +2,7 @@ package chat
 
 import (
 	"chatroom/dao"
-	"chatroom/socket"
+	"chatroom/pkg/core/socket"
 	"context"
 	"log"
 

@@ -3,9 +3,9 @@ package event
 import (
 	"chatroom/dao"
 	"chatroom/pkg/business"
+	"chatroom/pkg/core/socket"
 	"chatroom/pkg/jsonutil"
 	"chatroom/service"
-	"chatroom/socket"
 	"chatroom/socket/handler/event/chat"
 	"chatroom/types"
 	"context"

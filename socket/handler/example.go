@@ -2,12 +2,12 @@ package handler
 
 import (
 	"chatroom/dao/cache"
+	"chatroom/pkg/core/socket"
+	"chatroom/pkg/core/socket/adapter"
 	"chatroom/socket/handler/event"
 	"log"
 
 	"chatroom/context"
-	"chatroom/socket"
-	"chatroom/socket/adapter"
 )
 
 // ExampleChannel 案例

@@ -2,7 +2,7 @@ package queue
 
 import (
 	"chatroom/pkg/core"
-	"chatroom/socket"
+	"chatroom/pkg/core/socket"
 	"chatroom/socket/consume"
 	"context"
 )

@@ -41,6 +41,7 @@ func NewWebSocketCommand() core.Command {
 func main() {
 	app := core.NewApp("v1.0.0")
 	app.Register(NewHttpCommand)
+	app.Register(NewWebSocketCommand)
 	os.Args = append(os.Args, "Gin")
 	app.Run()
 

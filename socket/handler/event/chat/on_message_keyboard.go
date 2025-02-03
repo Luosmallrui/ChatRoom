@@ -1,12 +1,12 @@
 package chat
 
 import (
+	"chatroom/pkg/core/socket"
 	"context"
 	"encoding/json"
 	"log"
 
 	"chatroom/pkg/jsonutil"
-	"chatroom/socket"
 	"chatroom/types"
 )
 

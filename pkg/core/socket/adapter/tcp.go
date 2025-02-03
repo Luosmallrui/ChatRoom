@@ -2,7 +2,7 @@ package adapter
 
 import (
 	"bufio"
-	"chatroom/socket/adapter/encoding"
+	"chatroom/pkg/core/socket/adapter/encoding"
 	"fmt"
 	"io"
 	"net"

@@ -3,7 +3,6 @@ package adapter
 import (
 	"github.com/gorilla/websocket"
 	"net/http"
-	//"github.com/gorilla/websocket"
 )
 
 // WsAdapter Websocket 适配器

@@ -1,6 +1,8 @@
 package socket
 
 import (
+	"chatroom/pkg/core/socket"
+	"chatroom/pkg/email"
 	"context"
 	"errors"
 	"fmt"
@@ -39,15 +41,15 @@ func Run(ctx *cli.Context, app *AppProvider) error {
 	}
 
 	// 初始化 IM 渠道配置
-	Initialize(groupCtx, eg, func(name string) {
-		//emailClient := app.Providers.EmailClient
-		//if app.Config.App.Env == "prod" {
-		//	_ = emailClient.SendMail(&email.Option{
-		//		To:      app.Config.App.AdminEmail,
-		//		Subject: fmt.Sprintf("[%s]守护进程异常", app.Config.App.Env),
-		//		Body:    fmt.Sprintf("守护进程异常[%s]", name),
-		//	})
-		//}
+	socket.Initialize(groupCtx, eg, func(name string) {
+		emailClient := app.Providers.EmailClient
+		if app.Config.App.Env == "prod" {
+			_ = emailClient.SendMail(&email.Option{
+				To:      app.Config.App.AdminEmail,
+				Subject: fmt.Sprintf("[%s]守护进程异常", app.Config.App.Env),
+				Body:    fmt.Sprintf("守护进程异常[%s]", name),
+			})
+		}
 	})
 
 	c := make(chan os.Signal, 1)

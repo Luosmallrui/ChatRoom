@@ -15,6 +15,7 @@ import (
 	"chatroom/pkg/client"
 	"chatroom/pkg/core"
 	"chatroom/service"
+	"chatroom/service/message"
 	"github.com/google/wire"
 )
 
@@ -110,12 +111,39 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		ContactService:       contactService,
 		ClientConnectService: clientConnectService,
 	}
+	cacheJwtTokenStorage := cache.NewTokenSessionStorage(redisClient)
 	contactGroup := dao.NewContactGroup(db)
 	contactGroupService := &service.ContactGroupService{
 		Source:           source,
 		ContactGroupRepo: contactGroup,
 	}
+	contactApplyService := &service.ContactApplyService{
+		Source:      source,
+		PushMessage: pushMessage,
+	}
+	fileUpload := dao.NewFileUpload(db)
+	vote := cache.NewVote(redisClient)
+	groupVote := dao.NewGroupVote(db, vote)
+	iFilesystem := config.NewFilesystem(conf)
+	robot := dao.NewRobot(db)
+	messageService := &message.Service{
+		Source:              source,
+		GroupMemberRepo:     groupMember,
+		SplitUploadRepo:     fileUpload,
+		TalkRecordsVoteRepo: groupVote,
+		UsersRepo:           users,
+		Filesystem:          iFilesystem,
+		UnreadStorage:       unreadStorage,
+		MessageStorage:      messageStorage,
+		ServerStorage:       serverStorage,
+		ClientStorage:       clientStorage,
+		Sequence:            daoSequence,
+		RobotRepo:           robot,
+		PushMessage:         pushMessage,
+	}
 	controllerContact := &controller.Contact{
+		Session:             cacheJwtTokenStorage,
+		Config:              conf,
 		ClientStorage:       clientStorage,
 		ContactRepo:         contact,
 		UsersRepo:           users,
@@ -126,6 +154,8 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		UserService:         userService,
 		TalkListService:     talkSessionService,
 		ContactGroupService: contactGroupService,
+		ContactApplyService: contactApplyService,
+		MessageService:      messageService,
 	}
 	groupMemberService := &service.GroupMemberService{
 		Source:          source,
@@ -161,4 +191,4 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 
 // wire.go:
 
-var providerSet = wire.NewSet(client.NewMySQLClient, client.NewRedisClient)
+var providerSet = wire.NewSet(client.NewMySQLClient, client.NewRedisClient, config.NewFilesystem)

@@ -28,3 +28,65 @@ type ContactGroupItem struct {
 	Count int32  `json:"count"` // 联系人数
 	Sort  int32  `json:"sort"`  // 分组排序
 }
+
+type ContactSearchRequest struct {
+	Mobile string `form:"mobile" binding:"required"`
+}
+
+type ContactSearchResponse struct {
+	UserID   int32  `json:"user_id"`  // 用户ID
+	Mobile   string `json:"mobile"`   // 手机号
+	Nickname string `json:"nickname"` // 昵称
+	Avatar   string `json:"avatar"`   // 头像URL
+	Gender   int32  `json:"gender"`   // 性别
+	Motto    string `json:"motto"`    // 个性签名
+}
+
+type ContactDetailRequest struct {
+	UserID int32 `form:"user_id" binding:"required"` // 用户ID，必填
+}
+
+type ContactDetailResponse struct {
+	UserID     int32       `json:"user_id"`     // 用户ID
+	Mobile     string      `json:"mobile"`      // 手机号
+	Nickname   string      `json:"nickname"`    // 昵称
+	Avatar     string      `json:"avatar"`      // 头像URL
+	Gender     int32       `json:"gender"`      // 性别
+	Motto      string      `json:"motto"`       // 个性签名
+	Email      string      `json:"email"`       // 邮箱
+	FriendInfo *FriendInfo `json:"friend_info"` // 好友信息
+}
+
+type FriendInfo struct {
+	IsFriend string `json:"is_friend"` // 是否是好友
+	GroupID  int32  `json:"group_id"`  // 分组ID
+	Remark   string `json:"remark"`    // 好友备注
+}
+
+type ContactApplyCreateRequest struct {
+	UserID int32  `json:"user_id" binding:"required"` // 用户ID，必填
+	Remark string `json:"remark" binding:"required"`  // 添加好友备注，必填
+}
+
+type ContactApplyCreateResponse struct{}
+
+type ContactApplyAcceptRequest struct {
+	ApplyID int32  `json:"apply_id" binding:"required"` // 申请ID，必填
+	Remark  string `json:"remark"`
+}
+
+type ContactApplyAcceptResponse struct{}
+
+type ContactApplyListResponse struct {
+	Items []*ContactApplyListItem `json:"items"` // 联系人申请列表
+}
+
+type ContactApplyListItem struct {
+	ID        int32  `json:"id"`         // 申请记录ID
+	UserID    int32  `json:"user_id"`    // 当前用户ID
+	FriendID  int32  `json:"friend_id"`  // 好友ID
+	Remark    string `json:"remark"`     // 申请备注
+	Nickname  string `json:"nickname"`   // 好友昵称
+	Avatar    string `json:"avatar"`     // 好友头像URL
+	CreatedAt string `json:"created_at"` // 申请创建时间
+}

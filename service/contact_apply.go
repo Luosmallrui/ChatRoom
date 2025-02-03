@@ -161,10 +161,10 @@ func (s *ContactApplyService) List(ctx context.Context, uid int) ([]*model.Apply
 	tx := s.Source.Db().WithContext(ctx).Table("contact_apply")
 	tx.Joins("left join `users` ON `users`.id = contact_apply.user_id")
 	tx.Where("contact_apply.friend_id = ?", uid)
-	tx.Order("contact_apply.id desc")
+	tx.Order("contact_apply.id desc").Debug()
 
 	var items []*model.ApplyItem
-	if err := tx.Select(fields).Scan(&items).Error; err != nil {
+	if err := tx.Debug().Select(fields).Scan(&items).Error; err != nil {
 		return nil, err
 	}
 

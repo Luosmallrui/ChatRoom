@@ -14,7 +14,7 @@ type Config struct {
 	Jwt   *Jwt   `json:"jwt" yaml:"jwt"`
 	//Cors       *Cors       `json:"cors" yaml:"cors"`
 	//Log        *Log        `json:"log" yaml:"log"`
-	//Filesystem *Filesystem `json:"filesystem" yaml:"filesystem"`
+	Filesystem *Filesystem `json:"filesystem" yaml:"filesystem"`
 	//Email      *Email      `json:"email" yaml:"email"`
 	Server *Server `json:"server" yaml:"server"`
 	Nsq    *Nsq    `json:"nsq" yaml:"nsq"`

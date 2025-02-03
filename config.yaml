@@ -57,7 +57,7 @@ filesystem:
   default: local
   local:
     # 文件保存的根目录
-    root: "/path/xx/lumenim/"
+    root: "/path/xx/test/"
     # 公开的 bucket
     bucket_public: "public"
     # 私有的 bucket

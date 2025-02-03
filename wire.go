@@ -13,6 +13,7 @@ import (
 var providerSet = wire.NewSet(
 	client.NewMySQLClient,
 	client.NewRedisClient,
+	config.NewFilesystem,
 	// 基础服务
 	//provider.NewMySQLClient,
 	//provider.NewRedisClient,

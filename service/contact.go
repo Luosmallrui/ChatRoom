@@ -80,7 +80,7 @@ func (s *ContactService) List(ctx context.Context, uid int) ([]*model.ContactLis
 	tx.Where("contact.user_id = ? and contact.status = ?", uid, model.ContactStatusNormal)
 
 	var items []*model.ContactListItem
-	if err := tx.Scan(&items).Error; err != nil {
+	if err := tx.Debug().Scan(&items).Error; err != nil {
 		return nil, err
 	}
 

@@ -2,12 +2,12 @@ package handler
 
 import (
 	"chatroom/context"
-	"go-chat/internal/comet/handler/event"
+	"chatroom/service"
+	"chatroom/socket/handler/event"
 	"log"
 
 	"chatroom/socket"
 	"chatroom/socket/adapter"
-	"go-chat/internal/service"
 )
 
 type ChatChannel struct {

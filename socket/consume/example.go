@@ -1,7 +1,7 @@
 package consume
 
 import (
-	"chatroom/socket/handler/event/example"
+	"chatroom/socket/consume/example"
 	"context"
 )
 

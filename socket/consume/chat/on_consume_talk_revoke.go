@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"chatroom/model"
 	"chatroom/pkg/core"
 	"chatroom/pkg/logger"
 	"chatroom/socket"
@@ -8,10 +9,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
-	"go-chat/internal/pkg/core/socket"
-	"go-chat/internal/pkg/logger"
-	"go-chat/internal/repository/model"
 )
 
 type ConsumeTalkRevoke struct {

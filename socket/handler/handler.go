@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"go-chat/config"
-	"go-chat/internal/pkg/core/socket"
+	"chatroom/config"
+	"chatroom/socket"
 )
 
 type Handler struct {

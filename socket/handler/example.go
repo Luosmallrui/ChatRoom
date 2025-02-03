@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"go-chat/internal/comet/handler/event"
+	"chatroom/dao/cache"
+	"chatroom/socket/handler/event"
 	"log"
 
 	"chatroom/context"
 	"chatroom/socket"
 	"chatroom/socket/adapter"
-	"go-chat/internal/repository/cache"
 )
 
 // ExampleChannel 案例

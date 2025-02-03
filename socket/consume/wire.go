@@ -1,9 +1,9 @@
 package consume
 
 import (
+	"chatroom/socket/consume/chat"
+	"chatroom/socket/consume/example"
 	"github.com/google/wire"
-	"go-chat/internal/comet/consume/chat"
-	"go-chat/internal/comet/consume/example"
 )
 
 var ProviderSet = wire.NewSet(

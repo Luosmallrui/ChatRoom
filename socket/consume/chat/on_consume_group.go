@@ -1,20 +1,18 @@
 package chat
 
 import (
+	"chatroom/model"
+	"chatroom/pkg/logger"
+	"chatroom/socket"
+	"chatroom/types"
 	"context"
 	"encoding/json"
 	"time"
-
-	"go-chat/internal/entity"
-	"go-chat/internal/pkg/core/socket"
-	"go-chat/internal/pkg/logger"
-	"go-chat/internal/pkg/server"
-	"go-chat/internal/repository/model"
 )
 
 // 加入群房间
 func (h *Handler) onConsumeGroupJoin(ctx context.Context, body []byte) {
-	var in entity.SubEventGroupJoinPayload
+	var in types.SubEventGroupJoinPayload
 	if err := json.Unmarshal(body, &in); err != nil {
 		logger.Errorf("[ChatSubscribe] onConsumeGroupJoin Unmarshal err: %s", err.Error())
 		return
@@ -37,7 +35,7 @@ func (h *Handler) onConsumeGroupJoin(ctx context.Context, body []byte) {
 
 // 入群申请通知
 func (h *Handler) onConsumeGroupApply(ctx context.Context, body []byte) {
-	var in entity.SubEventGroupApplyPayload
+	var in types.SubEventGroupApplyPayload
 	if err := json.Unmarshal(body, &in); err != nil {
 		logger.Errorf("[ChatSubscribe] onConsumeGroupApply Unmarshal err: %s", err.Error())
 		return
@@ -76,7 +74,7 @@ func (h *Handler) onConsumeGroupApply(ctx context.Context, body []byte) {
 	c := socket.NewSenderContent()
 	c.SetReceive(clientIds...)
 	c.SetAck(true)
-	c.SetMessage(entity.PushEventGroupApply, entity.ImGroupApplyPayload{
+	c.SetMessage(types.PushEventGroupApply, types.ImGroupApplyPayload{
 		GroupId:   groupDetail.Id,
 		GroupName: groupDetail.Name,
 		UserId:    user.Id,

@@ -4,12 +4,12 @@ import (
 	"chatroom/model"
 	"chatroom/pkg/core"
 	"chatroom/pkg/logger"
+	"chatroom/service"
 	"chatroom/socket"
 	"chatroom/types"
 	"context"
 	"encoding/json"
 	"fmt"
-	"go-chat/internal/service"
 	"time"
 )
 

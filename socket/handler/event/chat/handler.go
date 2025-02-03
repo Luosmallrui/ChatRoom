@@ -1,15 +1,14 @@
 package chat
 
 import (
+	"chatroom/dao"
+	"chatroom/pkg/business"
+	"chatroom/service"
 	"context"
-	"go-chat/internal/business"
 	"log"
 
 	"chatroom/socket"
 	"github.com/redis/go-redis/v9"
-	"go-chat/internal/pkg/core/socket"
-	"go-chat/internal/repository/repo"
-	"go-chat/internal/service"
 )
 
 type handle func(ctx context.Context, client socket.IClient, data []byte)
@@ -18,7 +17,7 @@ var handlers map[string]handle
 
 type Handler struct {
 	Redis         *redis.Client
-	Source        *repo.Source
+	Source        *dao.Source
 	MemberService service.IGroupMemberService
 	PushMessage   *business.PushMessage
 }

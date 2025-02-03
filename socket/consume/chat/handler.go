@@ -9,7 +9,6 @@ import (
 	"chatroom/config"
 	"chatroom/service"
 	"chatroom/types"
-	"go-chat/internal/service"
 )
 
 var handlers map[string]func(ctx context.Context, data []byte)

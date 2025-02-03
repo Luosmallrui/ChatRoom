@@ -1,9 +1,9 @@
 package event
 
 import (
+	"chatroom/socket/handler/event/chat"
+	"chatroom/socket/handler/event/example"
 	"github.com/google/wire"
-	"go-chat/internal/comet/handler/event/chat"
-	"go-chat/internal/comet/handler/event/example"
 )
 
 var ProviderSet = wire.NewSet(

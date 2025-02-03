@@ -1,13 +1,12 @@
 package event
 
 import (
+	"chatroom/socket"
+	"chatroom/socket/handler/event/example"
 	"context"
 	"fmt"
 
 	"github.com/tidwall/gjson"
-	"go-chat/internal/comet/handler/event/example"
-
-	"go-chat/internal/pkg/core/socket"
 )
 
 type ExampleEvent struct {

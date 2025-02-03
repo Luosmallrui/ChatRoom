@@ -3,6 +3,7 @@ package main
 import (
 	"chatroom/config"
 	"chatroom/pkg/core"
+	"chatroom/socket"
 	"github.com/urfave/cli/v2"
 	"os"
 )
@@ -30,11 +31,9 @@ func NewWebSocketCommand() core.Command {
 		Action: func(ctx *cli.Context, conf *config.Config) error {
 			//logger.Init(conf.Log.LogFilePath("app.log"), logger.LevelInfo, "http")
 			// 初始化依赖注入
-			app := NewHttpInjector(conf)
-			// 注册路由
-			app.RegisterRoutes()
+			app := NewSocketInjector(conf)
 			// 启动 HTTP 服务
-			return core.Run(ctx, app)
+			return socket.Run(ctx, app)
 		},
 	}
 }

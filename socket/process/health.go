@@ -1,12 +1,12 @@
 package process
 
 import (
+	"chatroom/dao/cache"
 	"context"
 	"log"
 	"time"
 
 	"chatroom/pkg/core"
-	"go-chat/internal/repository/cache"
 )
 
 type HealthSubscribe struct {

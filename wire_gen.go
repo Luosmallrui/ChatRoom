@@ -64,6 +64,20 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		Source:          source,
 		GroupMemberRepo: groupMember,
 	}
+	vote := cache.NewVote(redisClient)
+	groupVote := dao.NewGroupVote(db, vote)
+	talkUserMessage := dao.NewTalkRecordFriend(db)
+	talkGroupMessage := dao.NewTalkRecordGroup(db)
+	talkGroupMessageDel := dao.NewTalkRecordGroupDel(db)
+	talkRecordService := &service.TalkRecordService{
+		Source:                source,
+		TalkVoteCache:         vote,
+		TalkRecordsVoteRepo:   groupVote,
+		GroupMemberRepo:       groupMember,
+		TalkRecordFriendRepo:  talkUserMessage,
+		TalkRecordGroupRepo:   talkGroupMessage,
+		TalkRecordsDeleteRepo: talkGroupMessageDel,
+	}
 	talkSession := dao.NewTalkSession(db)
 	talkSessionService := &service.TalkSessionService{
 		Source:          source,
@@ -107,6 +121,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		UsersRepo:            users,
 		GroupRepo:            group,
 		TalkService:          talkService,
+		TalkRecordsService:   talkRecordService,
 		TalkSessionService:   talkSessionService,
 		UserService:          userService,
 		GroupService:         groupService,
@@ -124,8 +139,6 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		PushMessage: pushMessage,
 	}
 	fileUpload := dao.NewFileUpload(db)
-	vote := cache.NewVote(redisClient)
-	groupVote := dao.NewGroupVote(db, vote)
 	iFilesystem := config.NewFilesystem(conf)
 	robot := dao.NewRobot(db)
 	messageService := &message.Service{
@@ -159,6 +172,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		ContactApplyService: contactApplyService,
 		MessageService:      messageService,
 	}
+	groupApplyStorage := cache.NewGroupApplyStorage(redisClient)
 	groupMemberService := &service.GroupMemberService{
 		Source:          source,
 		GroupMemberRepo: groupMember,
@@ -169,6 +183,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		UsersRepo:          users,
 		GroupRepo:          group,
 		GroupMemberRepo:    groupMember,
+		GroupApplyStorage:  groupApplyStorage,
 		TalkSessionRepo:    talkSession,
 		GroupService:       groupService,
 		GroupMemberService: groupMemberService,
@@ -176,12 +191,34 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		UserService:        userService,
 		ContactService:     contactService,
 	}
+	emoticon := dao.NewEmoticon(db)
+	emoticonService := &service.EmoticonService{
+		Source:       source,
+		EmoticonRepo: emoticon,
+		Filesystem:   iFilesystem,
+	}
+	controllerEmoticon := &controller.Emoticon{
+		Session:         cacheJwtTokenStorage,
+		Config:          conf,
+		RedisLock:       redisLock,
+		EmoticonRepo:    emoticon,
+		EmoticonService: emoticonService,
+		Filesystem:      iFilesystem,
+	}
+	publish := &controller.Publish{
+		Session:        cacheJwtTokenStorage,
+		Config:         conf,
+		AuthService:    authService,
+		MessageService: messageService,
+	}
 	controllers := &controller.Controllers{
-		User:    user,
-		Auth:    auth,
-		Session: session,
-		Contact: controllerContact,
-		Group:   controllerGroup,
+		User:     user,
+		Auth:     auth,
+		Session:  session,
+		Contact:  controllerContact,
+		Group:    controllerGroup,
+		Emoticon: controllerEmoticon,
+		Publish:  publish,
 	}
 	appProvider := &core.AppProvider{
 		Config:      conf,

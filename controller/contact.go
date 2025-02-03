@@ -47,10 +47,18 @@ func (u *Contact) RegisterRouter(r gin.IRouter) {
 	c.GET("/group/list", context.HandlerFunc(u.GroupList)) // 联系人分组列表
 
 	// 联系人申请相关
-	c.GET("/apply/records", context.HandlerFunc(u.ContactApplyList)) // 联系人申请列表
-	c.POST("/apply/create", context.HandlerFunc(u.Create))           // 添加联系人申请
-	c.POST("/apply/accept", context.HandlerFunc(u.Accept))           // 同意人申请列表
+	c.GET("/apply/records", context.HandlerFunc(u.ContactApplyList))  // 联系人申请列表
+	c.POST("/apply/create", context.HandlerFunc(u.Create))            // 添加联系人申请
+	c.POST("/apply/accept", context.HandlerFunc(u.Accept))            // 同意人申请列表
+	c.GET("/apply/unread-num", context.HandlerFunc(u.ApplyUnreadNum)) // 联系人申请未读数
 	//c.POST("/apply/decline", context.HandlerFunc(handler.V1.ContactApply.Decline)) // 拒绝人申请列表
+}
+
+// ApplyUnreadNum 获取好友申请未读数
+func (u *Contact) ApplyUnreadNum(ctx *context.Context) error {
+	return ctx.Success(map[string]any{
+		"unread_num": u.ContactApplyService.GetApplyUnreadNum(ctx.Ctx(), ctx.UserId()),
+	})
 }
 
 // ContactApplyList 获取联系人申请列表
@@ -275,7 +283,7 @@ func (u *Contact) Detail(ctx *context.Context) error {
 }
 
 // OnlineStatus 获取联系人在线状态
-func (c *Contact) OnlineStatus(ctx *context.Context) error {
+func (u *Contact) OnlineStatus(ctx *context.Context) error {
 	in := &types.ContactOnlineStatusRequest{}
 	if err := ctx.Context.ShouldBind(in); err != nil {
 		return ctx.InvalidParams(err)
@@ -285,7 +293,7 @@ func (c *Contact) OnlineStatus(ctx *context.Context) error {
 		OnlineStatus: 1,
 	}
 
-	if c.ClientStorage.IsOnline(ctx.Ctx(), types.ImChannelChat, fmt.Sprintf("%d", in.UserID)) {
+	if u.ClientStorage.IsOnline(ctx.Ctx(), types.ImChannelChat, fmt.Sprintf("%d", in.UserID)) {
 		resp.OnlineStatus = 2
 	}
 

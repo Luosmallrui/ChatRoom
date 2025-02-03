@@ -236,3 +236,11 @@ type TalkSessionClearUnreadNumRequest struct {
 
 type TalkSessionClearUnreadNumResponse struct {
 }
+
+type GetTalkRecordsRequest struct {
+	TalkMode int `form:"talk_mode" json:"talk_mode" binding:"required,oneof=1 2"`       // 对话类型
+	ToFromId int `form:"to_from_id" json:"to_from_id" binding:"required,numeric,min=1"` // 接收者ID
+	MsgType  int `form:"msg_type" json:"msg_type" binding:"numeric"`                    // 消息类型
+	Cursor   int `form:"cursor" json:"cursor" binding:"min=0,numeric"`                  // 上次查询的游标
+	Limit    int `form:"limit" json:"limit" binding:"required,numeric,max=100"`         // 数据行数
+}

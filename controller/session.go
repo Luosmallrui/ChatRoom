@@ -8,6 +8,7 @@ import (
 	"chatroom/middleware"
 	"chatroom/model"
 	"chatroom/pkg/encrypt"
+	"chatroom/pkg/strutil"
 	"chatroom/pkg/timeutil"
 	"chatroom/service"
 	"chatroom/types"
@@ -29,6 +30,7 @@ type Session struct {
 	UsersRepo            *dao.Users
 	GroupRepo            *dao.Group
 	TalkService          service.ITalkService
+	TalkRecordsService   service.ITalkRecordService
 	TalkSessionService   service.ITalkSessionService
 	UserService          service.IUserService
 	GroupService         service.IGroupService
@@ -41,16 +43,79 @@ func (c *Session) RegisterRouter(r gin.IRouter) {
 	authorize := middleware.Auth(c.Config.Jwt.Secret, "admin", c.Session)
 	r.Use(authorize)
 	talk := r.Group("/api/v1/talk")
-	talk.GET("/list", context.HandlerFunc(c.List))        // 会话列表
-	talk.POST("/create", context.HandlerFunc(c.Create))   // 创建会话
-	talk.POST("/delete", context.HandlerFunc(c.Delete))   // 删除会话
-	talk.POST("/topping", context.HandlerFunc(c.Top))     // 置顶会话
-	talk.POST("/disturb", context.HandlerFunc(c.Disturb)) // 会话免打扰
-	//talk.GET("/records", context.HandlerFunc(c.GetRecords))                   // 会话面板记录
+	talk.GET("/list", context.HandlerFunc(c.List))          // 会话列表
+	talk.POST("/create", context.HandlerFunc(c.Create))     // 创建会话
+	talk.POST("/delete", context.HandlerFunc(c.Delete))     // 删除会话
+	talk.POST("/topping", context.HandlerFunc(c.Top))       // 置顶会话
+	talk.POST("/disturb", context.HandlerFunc(c.Disturb))   // 会话免打扰
+	talk.GET("/records", context.HandlerFunc(c.GetRecords)) // 会话面板记录
 	//talk.GET("/history-records", context.HandlerFunc(c.SearchHistoryRecords)) // 历史会话记录
 	//talk.GET("/forward-records", context.HandlerFunc(c.GetForwardRecords))    // 会话转发记录
 	//talk.GET("/file-download", context.HandlerFunc(c.Download))               // 下载文件
 	talk.POST("/clear-unread", context.HandlerFunc(c.ClearUnreadMessage)) // 清除会话未读数
+}
+
+// GetRecords 获取会话记录
+func (c *Session) GetRecords(ctx *context.Context) error {
+	in := &types.GetTalkRecordsRequest{}
+	if err := ctx.Context.ShouldBindQuery(in); err != nil {
+		return ctx.InvalidParams(err)
+	}
+
+	uid := ctx.UserId()
+	if in.TalkMode == types.ChatGroupMode {
+		err := c.AuthService.IsAuth(ctx.Ctx(), &service.AuthOption{
+			TalkType: in.TalkMode,
+			UserId:   uid,
+			ToFromId: in.ToFromId,
+		})
+
+		if err != nil {
+			items := make([]types.TalkRecord, 0)
+			items = append(items, types.TalkRecord{
+				MsgId:    strutil.NewMsgId(),
+				Sequence: 1,
+				MsgType:  types.ChatMsgSysText,
+				Extra: model.TalkRecordExtraText{
+					Content: "暂无权限查看群消息",
+				},
+				CreatedAt: timeutil.DateTime(),
+			})
+
+			return ctx.Success(map[string]any{
+				"cursor": 1,
+				"items":  items,
+			})
+		}
+	}
+
+	records, err := c.TalkRecordsService.FindAllTalkRecords(ctx.Ctx(), &service.FindAllTalkRecordsOpt{
+		TalkType:   in.TalkMode,
+		UserId:     uid,
+		ReceiverId: in.ToFromId,
+		Cursor:     in.Cursor,
+		Limit:      in.Limit,
+	})
+
+	if err != nil {
+		return ctx.ErrorBusiness(err.Error())
+	}
+
+	cursor := 0
+	if length := len(records); length > 0 {
+		cursor = records[length-1].Sequence
+	}
+
+	for i, record := range records {
+		if record.IsRevoked == model.Yes {
+			records[i].Extra = make(map[string]any)
+		}
+	}
+
+	return ctx.Success(map[string]any{
+		"cursor": cursor,
+		"items":  records,
+	})
 }
 
 // Create 创建会话列表

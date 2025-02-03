@@ -10,11 +10,12 @@ import (
 )
 
 type Group struct {
-	RedisLock       *cache.RedisLock
-	Repo            *dao.Source
-	UsersRepo       *dao.Users
-	GroupRepo       *dao.Group
-	GroupMemberRepo *dao.GroupMember
+	RedisLock         *cache.RedisLock
+	Repo              *dao.Source
+	UsersRepo         *dao.Users
+	GroupRepo         *dao.Group
+	GroupMemberRepo   *dao.GroupMember
+	GroupApplyStorage *cache.GroupApplyStorage
 	//GroupNoticeRepo    *dao.GroupNotice
 	TalkSessionRepo    *dao.TalkSession
 	GroupService       service.IGroupService
@@ -27,8 +28,16 @@ type Group struct {
 
 func (g *Group) RegisterRouter(r gin.IRouter) {
 	c := r.Group("/api/v1/group")
-	c.GET("/list", context.HandlerFunc(g.List)) // 获取好友列表
+	c.GET("/list", context.HandlerFunc(g.List))                   // 获取好友列表
+	c.GET("/apply/unread", context.HandlerFunc(g.ApplyUnreadNum)) // 入群申请未读
 }
+
+func (g *Group) ApplyUnreadNum(ctx *context.Context) error {
+	return ctx.Success(map[string]any{
+		"unread_num": g.GroupApplyStorage.Get(ctx.Ctx(), ctx.UserId()),
+	})
+}
+
 func (g *Group) List(ctx *context.Context) error {
 	items, err := g.GroupService.List(ctx.UserId())
 	if err != nil {

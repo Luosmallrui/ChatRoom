@@ -16,6 +16,8 @@ var ProviderSet = wire.NewSet(
 	wire.Struct(new(Session), "*"),
 	wire.Struct(new(Contact), "*"),
 	wire.Struct(new(Group), "*"),
+	wire.Struct(new(Emoticon), "*"),
+	wire.Struct(new(Publish), "*"),
 	dao.ProviderSet,
 	cache.ProviderSet,
 	service.ProviderSet,

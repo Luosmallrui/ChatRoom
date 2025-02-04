@@ -7,7 +7,6 @@ import (
 	"chatroom/service"
 	"chatroom/types"
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"strconv"
 	"time"
@@ -109,8 +108,6 @@ func (u *Auth) Register(ctx *context.Context) error {
 	if err := ctx.Context.ShouldBindJSON(in); err != nil {
 		return ctx.InvalidParams(err)
 	}
-	fmt.Println(in)
-
 	//// 验证短信验证码是否正确
 	//if !u.SmsService.Verify(ctx.Ctx(), entity.SmsRegisterChannel, in.Mobile, in.SmsCode) {
 	//	return ctx.InvalidParams("短信验证码填写错误！")

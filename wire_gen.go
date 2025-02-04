@@ -35,6 +35,7 @@ import (
 func NewHttpInjector(conf *config.Config) *core.AppProvider {
 	engine := core.NewGinServer()
 	redisClient := client.NewRedisClient(conf)
+	jwtTokenStorage := cache.NewTokenSessionStorage(redisClient)
 	db := client.NewMySQLClient(conf)
 	users := dao.NewUsers(db, redisClient)
 	userService := &service.UserService{
@@ -43,24 +44,25 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 	organize := dao.NewOrganize(db)
 	user := &controller.User{
 		Redis:        redisClient,
+		Session:      jwtTokenStorage,
+		Config:       conf,
 		UserService:  userService,
 		UsersRepo:    users,
 		OrganizeRepo: organize,
 	}
 	admin := dao.NewAdmin(db)
-	jwtTokenStorage := dao.NewTokenSessionStorage(redisClient)
+	daoJwtTokenStorage := dao.NewTokenSessionStorage(redisClient)
 	captchaStorage := dao.NewCaptchaStorage(redisClient)
 	captcha := dao.NewBase64Captcha(captchaStorage)
 	auth := &controller.Auth{
 		Config:          conf,
 		AdminRepo:       admin,
 		UserRepo:        users,
-		JwtTokenStorage: jwtTokenStorage,
+		JwtTokenStorage: daoJwtTokenStorage,
 		ICaptcha:        captcha,
 		UserService:     userService,
 	}
 	redisLock := cache.NewRedisLock(redisClient)
-	cacheJwtTokenStorage := cache.NewTokenSessionStorage(redisClient)
 	messageStorage := cache.NewMessageStorage(redisClient)
 	serverStorage := cache.NewSidStorage(redisClient)
 	clientStorage := cache.NewClientStorage(redisClient, conf, serverStorage)
@@ -122,7 +124,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 	}
 	session := &controller.Session{
 		RedisLock:            redisLock,
-		Session:              cacheJwtTokenStorage,
+		Session:              jwtTokenStorage,
 		Config:               conf,
 		MessageStorage:       messageStorage,
 		ClientStorage:        clientStorage,
@@ -168,7 +170,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		PushMessage:         pushMessage,
 	}
 	controllerContact := &controller.Contact{
-		Session:             cacheJwtTokenStorage,
+		Session:             jwtTokenStorage,
 		Config:              conf,
 		ClientStorage:       clientStorage,
 		ContactRepo:         contact,
@@ -189,6 +191,8 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		GroupMemberRepo: groupMember,
 	}
 	controllerGroup := &controller.Group{
+		Session:            jwtTokenStorage,
+		Config:             conf,
 		RedisLock:          redisLock,
 		Repo:               source,
 		UsersRepo:          users,
@@ -209,7 +213,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		Filesystem:   iFilesystem,
 	}
 	controllerEmoticon := &controller.Emoticon{
-		Session:         cacheJwtTokenStorage,
+		Session:         jwtTokenStorage,
 		Config:          conf,
 		RedisLock:       redisLock,
 		EmoticonRepo:    emoticon,
@@ -217,7 +221,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		Filesystem:      iFilesystem,
 	}
 	publish := &controller.Publish{
-		Session:        cacheJwtTokenStorage,
+		Session:        jwtTokenStorage,
 		Config:         conf,
 		AuthService:    authService,
 		MessageService: messageService,

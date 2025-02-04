@@ -37,8 +37,8 @@ type Contact struct {
 
 func (u *Contact) RegisterRouter(r gin.IRouter) {
 	authorize := middleware.Auth(u.Config.Jwt.Secret, "admin", u.Session)
-	r.Use(authorize)
 	c := r.Group("/api/v1/contact")
+	c.Use(authorize)
 	c.GET("/list", context.HandlerFunc(u.List))                   // 获取好友列表
 	c.GET("/search", context.HandlerFunc(u.Search))               //查找好友
 	c.GET("/detail", context.HandlerFunc(u.Detail))               //用户详情信息
@@ -64,7 +64,8 @@ func (u *Contact) ApplyUnreadNum(ctx *context.Context) error {
 // ContactApplyList 获取联系人申请列表
 func (u *Contact) ContactApplyList(ctx *context.Context) error {
 
-	list, err := u.ContactApplyService.List(ctx.Ctx(), 4)
+	uid := ctx.UserId()
+	list, err := u.ContactApplyService.List(ctx.Ctx(), uid)
 	if err != nil {
 		return ctx.Error(err.Error())
 	}

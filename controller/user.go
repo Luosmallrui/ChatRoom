@@ -1,9 +1,13 @@
 package controller
 
 import (
+	"chatroom/config"
+	"chatroom/middleware"
+
 	//"chatroom/pkg/core"
 	"chatroom/context"
 	"chatroom/dao"
+	"chatroom/dao/cache"
 	"chatroom/service"
 	"chatroom/types"
 	"github.com/gin-gonic/gin"
@@ -12,13 +16,17 @@ import (
 
 type User struct {
 	Redis        *redis.Client
+	Session      *cache.JwtTokenStorage
+	Config       *config.Config
 	UserService  service.IUserService
 	UsersRepo    *dao.Users
 	OrganizeRepo *dao.Organize
 }
 
 func (u *User) RegisterRouter(r gin.IRouter) {
+	authorize := middleware.Auth(u.Config.Jwt.Secret, "admin", u.Session)
 	g := r.Group("/api/v1/user")
+	g.Use(authorize)
 	g.GET("/list", context.HandlerFunc(u.Detail))
 	g.GET("/setting", context.HandlerFunc(u.Setting))
 }
@@ -36,8 +44,7 @@ func (u *User) Detail(ctx *context.Context) error {
 // Setting 用户设置
 func (u *User) Setting(ctx *context.Context) error {
 
-	//uid := ctx.UserId()
-	uid := 3
+	uid := ctx.UserId()
 
 	user, err := u.UsersRepo.FindByIdWithCache(ctx.Ctx(), uid)
 	if err != nil {

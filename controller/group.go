@@ -8,23 +8,26 @@ import (
 	"chatroom/middleware"
 	"chatroom/model"
 	"chatroom/pkg/sliceutil"
+	"chatroom/pkg/timeutil"
 	"chatroom/service"
 	"chatroom/types"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"slices"
 )
 
 type Group struct {
-	Session           *cache.JwtTokenStorage
-	Config            *config.Config
-	RedisLock         *cache.RedisLock
-	Repo              *dao.Source
-	UsersRepo         *dao.Users
-	GroupRepo         *dao.Group
-	GroupMemberRepo   *dao.GroupMember
-	GroupApplyStorage *cache.GroupApplyStorage
-	//GroupNoticeRepo    *dao.GroupNotice
+	Session            *cache.JwtTokenStorage
+	Config             *config.Config
+	RedisLock          *cache.RedisLock
+	Repo               *dao.Source
+	UsersRepo          *dao.Users
+	GroupRepo          *dao.Group
+	GroupMemberRepo    *dao.GroupMember
+	GroupApplyStorage  *cache.GroupApplyStorage
+	GroupNoticeRepo    *dao.GroupNotice
 	TalkSessionRepo    *dao.TalkSession
 	GroupService       service.IGroupService
 	GroupMemberService service.IGroupMemberService
@@ -37,7 +40,8 @@ func (g *Group) RegisterRouter(r gin.IRouter) {
 	authorize := middleware.Auth(g.Config.Jwt.Secret, "admin", g.Session)
 	r.Use(authorize)
 	c := r.Group("/api/v1/group")
-	c.GET("/list", context.HandlerFunc(g.List))                   // 获取好友列表
+	c.GET("/list", context.HandlerFunc(g.List))                   // 群组列表
+	c.GET("/detail", context.HandlerFunc(g.Detail))               // 群组详情
 	c.GET("/apply/unread", context.HandlerFunc(g.ApplyUnreadNum)) // 入群申请未读
 
 	c.GET("/invite-list", context.HandlerFunc(g.GetInviteFriends)) // 获取待邀请入群好友列表
@@ -45,6 +49,64 @@ func (g *Group) RegisterRouter(r gin.IRouter) {
 	c.POST("/create", context.HandlerFunc(g.Create))      // 创建群组
 	c.GET("/member/list", context.HandlerFunc(g.Members)) // 群成员列表
 
+}
+
+// Detail 获取群组信息
+func (g *Group) Detail(ctx *context.Context) error {
+	in := &types.GroupDetailRequest{}
+	if err := ctx.Context.ShouldBindQuery(in); err != nil {
+		return ctx.InvalidParams(err)
+	}
+
+	uid := ctx.UserId()
+
+	groupInfo, err := g.GroupRepo.FindById(ctx.Ctx(), int(in.GroupID))
+	if err != nil {
+		return ctx.ErrorBusiness(err.Error())
+	}
+
+	if groupInfo.Id == 0 {
+		return ctx.ErrorBusiness("数据不存在")
+	}
+
+	resp := &types.GroupDetailResponse{
+		GroupID:   int32(groupInfo.Id),
+		GroupName: groupInfo.Name,
+		Profile:   groupInfo.Profile,
+		Avatar:    groupInfo.Avatar,
+		CreatedAt: timeutil.FormatDatetime(groupInfo.CreatedAt),
+		IsManager: uid == groupInfo.CreatorId,
+		IsDisturb: 0,
+		IsMute:    int32(groupInfo.IsMute),
+		IsOvert:   int32(groupInfo.IsOvert),
+		VisitCard: g.GroupMemberRepo.GetMemberRemark(ctx.Ctx(), int(in.GroupID), uid),
+		Notice: &types.Notice{
+			Content:        "",
+			CreatedAt:      "",
+			UpdatedAt:      "",
+			ModifyUserName: "",
+		},
+	}
+
+	notice, err := g.GroupNoticeRepo.GetLatestNotice(ctx.Ctx(), int(in.GroupID))
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
+	if notice != nil {
+		resp.Notice = &types.Notice{
+			Content:        notice.Content,
+			CreatedAt:      timeutil.FormatDatetime(notice.CreatedAt),
+			UpdatedAt:      timeutil.FormatDatetime(notice.UpdatedAt),
+			ModifyUserName: "admin",
+		}
+	}
+
+	if g.TalkSessionRepo.IsDisturb(uid, groupInfo.Id, 2) {
+		resp.IsDisturb = 1
+	}
+
+	return ctx.Success(resp)
 }
 
 // Members 获取群成员列表

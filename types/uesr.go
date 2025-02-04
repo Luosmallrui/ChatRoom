@@ -25,3 +25,12 @@ type ConfigInfo struct {
 	NotifyCueTone       string `json:"notify_cue_tone"`       // 通知提示音
 	KeyboardEventNotify string `json:"keyboard_event_notify"` // 键盘事件通知
 }
+
+// UserDetailUpdateRequest 用户信息更新请求参数
+type UserDetailUpdateRequest struct {
+	Avatar   string `json:"avatar" binding:"omitempty,url"`     // 头像地址
+	Nickname string `json:"nickname" binding:"required,max=30"` // 用户昵称
+	Gender   int32  `json:"gender" binding:"oneof=0 1 2"`       // 性别(0:未知 1:男 2:女)
+	Motto    string `json:"motto" binding:"max=255"`            // 个性签名
+	Birthday string `json:"birthday" binding:"max=10"`          // 生日，格式：2006-01-02
+}

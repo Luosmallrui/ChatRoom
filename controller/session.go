@@ -278,6 +278,7 @@ func (c *Session) List(ctx *context.Context) error {
 		return ctx.ErrorBusiness(err.Error())
 	}
 
+	fmt.Println(len(data))
 	friends := make([]int, 0)
 	for _, item := range data {
 		if item.TalkMode == 1 {

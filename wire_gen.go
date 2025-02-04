@@ -186,6 +186,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		MessageService:      messageService,
 	}
 	groupApplyStorage := cache.NewGroupApplyStorage(redisClient)
+	groupNotice := dao.NewGroupNotice(db)
 	groupMemberService := &service.GroupMemberService{
 		Source:          source,
 		GroupMemberRepo: groupMember,
@@ -199,6 +200,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		GroupRepo:          group,
 		GroupMemberRepo:    groupMember,
 		GroupApplyStorage:  groupApplyStorage,
+		GroupNoticeRepo:    groupNotice,
 		TalkSessionRepo:    talkSession,
 		GroupService:       groupService,
 		GroupMemberService: groupMemberService,

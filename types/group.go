@@ -65,3 +65,31 @@ type GroupMemberListResponseItem struct {
 	Remark   string `json:"remark"`   // 备注
 	Motto    string `json:"motto"`    // 个性签名
 }
+
+// GroupDetailRequest 群聊详情请求参数
+type GroupDetailRequest struct {
+	GroupID int32 `form:"group_id" json:"group_id" binding:"required"` // 群组ID
+}
+
+// GroupDetailResponse 群聊详情响应参数
+type GroupDetailResponse struct {
+	GroupID   int32   `json:"group_id"`   // 群组ID
+	GroupName string  `json:"group_name"` // 群组名称
+	Profile   string  `json:"profile"`    // 群公告
+	Avatar    string  `json:"avatar"`     // 群头像
+	CreatedAt string  `json:"created_at"` // 创建时间
+	IsManager bool    `json:"is_manager"` // 是否为管理员
+	IsDisturb int32   `json:"is_disturb"` // 是否免打扰(0:否 1:是)
+	VisitCard string  `json:"visit_card"` // 群名片
+	IsMute    int32   `json:"is_mute"`    // 是否禁言(0:否 1:是)
+	IsOvert   int32   `json:"is_overt"`   // 是否公开(0:否 1:是)
+	Notice    *Notice `json:"notice"`     // 群公告信息
+}
+
+// Notice 群公告信息
+type Notice struct {
+	Content        string `json:"content"`          // 公告内容
+	CreatedAt      string `json:"created_at"`       // 创建时间
+	UpdatedAt      string `json:"updated_at"`       // 更新时间
+	ModifyUserName string `json:"modify_user_name"` // 修改人用户名
+}

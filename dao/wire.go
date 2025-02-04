@@ -31,6 +31,7 @@ var ProviderSet = wire.NewSet(
 	NewSequence,
 	NewAdmin,
 	NewCaptchaStorage,
+	NewGroupNotice,
 	//NewClientStorage,
 	//NewContactRemark,
 	//NewMessageStorage,

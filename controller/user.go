@@ -3,6 +3,8 @@ package controller
 import (
 	"chatroom/config"
 	"chatroom/middleware"
+	"chatroom/pkg/timeutil"
+	"strings"
 
 	//"chatroom/pkg/core"
 	"chatroom/context"
@@ -27,8 +29,40 @@ func (u *User) RegisterRouter(r gin.IRouter) {
 	authorize := middleware.Auth(u.Config.Jwt.Secret, "admin", u.Session)
 	g := r.Group("/api/v1/user")
 	g.Use(authorize)
-	g.GET("/list", context.HandlerFunc(u.Detail))
+	g.GET("/detail", context.HandlerFunc(u.Detail))
 	g.GET("/setting", context.HandlerFunc(u.Setting))
+	g.POST("/update", context.HandlerFunc(u.ChangeDetail)) // 修改用户信息
+}
+
+// ChangeDetail 修改个人用户信息
+func (u *User) ChangeDetail(ctx *context.Context) error {
+	in := &types.UserDetailUpdateRequest{}
+	if err := ctx.Context.ShouldBindJSON(in); err != nil {
+		return ctx.InvalidParams(err)
+	}
+
+	if in.Birthday != "" {
+		if !timeutil.IsDateFormat(in.Birthday) {
+			return ctx.InvalidParams("birthday 格式错误")
+		}
+	}
+
+	uid := ctx.UserId()
+	_, err := u.UsersRepo.UpdateById(ctx.Ctx(), ctx.UserId(), map[string]any{
+		"nickname": strings.TrimSpace(strings.Replace(in.Nickname, " ", "", -1)),
+		"avatar":   in.Avatar,
+		"gender":   in.Gender,
+		"motto":    in.Motto,
+		"birthday": in.Birthday,
+	})
+
+	if err != nil {
+		return ctx.ErrorBusiness("个人信息修改失败！")
+	}
+
+	_ = u.UsersRepo.ClearTableCache(ctx.Ctx(), uid)
+
+	return ctx.Success(nil, "个人信息修改成功！")
 }
 
 // Detail 个人用户信息

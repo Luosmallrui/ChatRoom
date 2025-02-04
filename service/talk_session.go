@@ -39,7 +39,7 @@ func (s *TalkSessionService) List(ctx context.Context, uid int) ([]*model.Search
 		"`group`.name as group_name", "`group`.avatar as group_avatar",
 	}
 
-	query := s.Source.Db().WithContext(ctx).Table("talk_session list")
+	query := s.Source.Db().WithContext(ctx).Debug().Table("talk_session list")
 	query.Joins("left join `users` ON list.to_from_id = `users`.id AND list.talk_mode = ?", types.ChatPrivateMode)
 	query.Joins("left join `group` ON list.to_from_id = `group`.id AND list.talk_mode = ?", types.ChatGroupMode)
 	query.Where("list.user_id = ? and list.is_delete = ?", uid, model.No)

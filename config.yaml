@@ -57,12 +57,12 @@ filesystem:
   default: local
   local:
     # 文件保存的根目录
-    root: "/path/xx/test/"
+    root: "/Users/luosmallrui"
     # 公开的 bucket
     bucket_public: "public"
     # 私有的 bucket
     bucket_private: "private"
-    endpoint: "im-cdn.xxx.com"
+    endpoint: "0.0.0.0:8082"
     ssl: false
   minio:
     secret_id: "xxxxxx"

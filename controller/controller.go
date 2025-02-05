@@ -21,6 +21,7 @@ type Controllers struct {
 	Group    *Group
 	Emoticon *Emoticon
 	Publish  *Publish
+	Upload   *Upload
 	//Chat    *ChatController
 	//Room    *RoomController
 	// ... 添加其他 controller
@@ -36,6 +37,8 @@ func (c *Controllers) RegisterRouters(r gin.IRouter) {
 	c.Group.RegisterRouter(r)
 	c.Emoticon.RegisterRouter(r)
 	c.Publish.RegisterRouter(r)
+	c.Upload.RegisterRouter(r)
+
 	//c.Chat.RegisterRouter(r)
 	//c.Room.RegisterRouter(r)
 	// ... 注册其他 controller 的路由

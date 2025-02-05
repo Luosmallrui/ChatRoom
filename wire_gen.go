@@ -228,6 +228,18 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		AuthService:    authService,
 		MessageService: messageService,
 	}
+	fileSplitUploadService := &service.FileSplitUploadService{
+		Source:          source,
+		SplitUploadRepo: fileUpload,
+		Config:          conf,
+		FileSystem:      iFilesystem,
+	}
+	upload := &controller.Upload{
+		Config:             conf,
+		Filesystem:         iFilesystem,
+		SplitUploadService: fileSplitUploadService,
+		Session:            jwtTokenStorage,
+	}
 	controllers := &controller.Controllers{
 		User:     user,
 		Auth:     auth,
@@ -236,6 +248,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		Group:    controllerGroup,
 		Emoticon: controllerEmoticon,
 		Publish:  publish,
+		Upload:   upload,
 	}
 	appProvider := &core.AppProvider{
 		Config:      conf,

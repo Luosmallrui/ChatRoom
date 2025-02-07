@@ -1,9 +1,9 @@
 package adapter
 
 import (
+	"chatroom/pkg/core/socket/adapter/encoding"
 	"chatroom/pkg/jsonutil"
 	"chatroom/pkg/strutil"
-	"chatroom/socket/adapter/encoding"
 	"fmt"
 	"net"
 	"testing"

@@ -54,15 +54,18 @@ func (a *AckBuffer) handle(_ *timewheel.SimpleTimeWheel[*AckBufferContent], _ st
 		return
 	}
 
+	//找到客户端
 	client, ok := ch.Client(bufferContent.cid)
 	if !ok {
 		return
 	}
 
+	//客户端以及关闭或者id不一致 就return
 	if client.Closed() || int64(client.uid) != bufferContent.uid {
 		return
 	}
 
+	//处理ack消息
 	if err := client.Write(bufferContent.response); err != nil {
 		log.Println("ack err: ", err)
 	}

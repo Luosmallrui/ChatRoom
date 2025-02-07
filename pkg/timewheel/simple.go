@@ -14,15 +14,16 @@ type entry[T any] struct {
 }
 
 // SimpleTimeWheel 简单时间轮
+// 时间轮基本组件
 type SimpleTimeWheel[T any] struct {
-	interval  time.Duration
-	ticker    *time.Ticker
-	tickIndex int
-	slot      []cmap.ConcurrentMap[string, *entry[T]]
-	indicator cmap.ConcurrentMap[string, int]
-	onTick    SimpleHandler[T]
-	taskChan  chan *entry[T]
-	quitChan  chan struct{}
+	interval  time.Duration                           // 时间轮转动间隔
+	ticker    *time.Ticker                            // 定时器
+	tickIndex int                                     // 当前刻度
+	slot      []cmap.ConcurrentMap[string, *entry[T]] // 时间轮槽位
+	indicator cmap.ConcurrentMap[string, int]         // 任务索引
+	onTick    SimpleHandler[T]                        // 任务处理函数
+	taskChan  chan *entry[T]                          // 任务通道
+	quitChan  chan struct{}                           // 退出信号
 }
 
 // SimpleHandler 处理函数

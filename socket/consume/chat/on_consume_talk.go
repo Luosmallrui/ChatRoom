@@ -99,6 +99,7 @@ func (h *Handler) onConsumeTalkGroupMessage(ctx context.Context, in types.SubEve
 
 	clientIds := h.RoomStorage.GetClientIDAll(int32(message.GroupId))
 
+	// [2,3,6] 群成员的id数组
 	if len(clientIds) == 0 {
 		return
 	}

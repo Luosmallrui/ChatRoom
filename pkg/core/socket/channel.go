@@ -29,6 +29,7 @@ type Channel struct {
 	outChan chan *SenderContent                 // 消息发送通道
 }
 
+// 1. 频道创建和管理
 func NewChannel(name string, outChan chan *SenderContent) *Channel {
 	return &Channel{name: name, node: cmap.New[*Client](), outChan: outChan}
 }
@@ -98,9 +99,15 @@ func (c *Channel) Start(ctx context.Context) error {
 func (c *Channel) consume(worker *pool.Pool, data *SenderContent, fn func(data *SenderContent, value *Client)) {
 	worker.Go(func() {
 
+		//如果需要广播
 		if data.IsBroadcast() {
+
+			//首先要获取 群成员的每一个client redis
+			//
+			//1 client1
+			//2 client2
 			c.node.IterCb(func(_ string, client *Client) {
-				fn(data, client)
+				fn(data, client) // 执行并发 塞到管道的逻辑
 			})
 			return
 		}

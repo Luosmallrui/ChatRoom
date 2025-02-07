@@ -15,13 +15,14 @@ var once sync.Once
 
 // session 渠道客户端
 type session struct {
-	Chat    *Channel // 默认分组
-	Example *Channel // 案例分组
+	Chat    *Channel // 默认分组   聊天频道
+	Example *Channel // 案例分组  示例频道
 
-	channels map[string]*Channel
+	channels map[string]*Channel //频道映射表
 	// 可自行注册其它渠道...
 }
 
+// 2. 频道查找
 func (s *session) Channel(name string) (*Channel, bool) {
 	val, ok := s.channels[name]
 	return val, ok
@@ -45,25 +46,32 @@ func initialize(ctx context.Context, eg *errgroup.Group, fn func(name string)) {
 	Session.channels["example"] = Session.Example
 
 	// 延时启动守护协程
+
+	// 3. 启动各个守护协程
 	time.AfterFunc(3*time.Second, func() {
+
+		// 健康检查协程
 		eg.Go(func() error {
 			defer fn("health exit")
 			return health.Start(ctx)
 		})
 
+		// ACK确认协程
 		eg.Go(func() error {
 			defer fn("ack exit")
 			return ack.Start(ctx)
 		})
+
+		// 聊天频道协程
 
 		eg.Go(func() error {
 			defer fn("chat exit")
 			return Session.Chat.Start(ctx)
 		})
 
-		eg.Go(func() error {
-			defer fn("example exit")
-			return Session.Example.Start(ctx)
-		})
+		//eg.Go(func() error {
+		//	defer fn("example exit")
+		//	return Session.Example.Start(ctx)
+		//})
 	})
 }

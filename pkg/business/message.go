@@ -13,6 +13,7 @@ type PushMessage struct {
 
 func (m *PushMessage) Push(ctx context.Context, topic string, body *types.SubscribeMessage) error {
 	m.Redis.Publish(ctx, topic, jsonutil.Encode(body))
+
 	return nil
 }
 

@@ -89,7 +89,9 @@ func (c *ClientStorage) GetClientIdFromUid(ctx context.Context, sid, channel str
 // @params id       用户ID
 func (c *ClientStorage) set(ctx context.Context, sid, channel string, clientId int64, uid int) error {
 	_, err := c.redis.Pipelined(ctx, func(pipe redis.Pipeliner) error {
+		// 命令1: 存储客户端与用户的映射
 		pipe.HSet(ctx, c.clientKey(sid, channel), clientId, uid)
+		// 命令2: 存储用户的所有客户端
 		pipe.SAdd(ctx, c.userKey(sid, channel, strconv.Itoa(uid)), clientId)
 		return nil
 	})

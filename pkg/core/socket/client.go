@@ -99,6 +99,7 @@ func NewClient(conn IConn, option *ClientOption, event IEvent) error {
 			return err
 		}
 	}
+	//消息 redis publish 留到了Redis上 现在每个服务器 两台 机器 都会去解析推送上来的数据
 
 	// 注册客户端
 	client.channel.addClient(client)
@@ -160,7 +161,7 @@ func (c *Client) Write(data *ClientResponse) error {
 	if data.IsAck && data.Ackid == "" {
 		data.Ackid = strings.ReplaceAll(uuid.New().String(), "-", "")
 	}
-	c.outChan <- data
+	c.outChan <- data //ack的content
 
 	return nil
 }

@@ -92,7 +92,18 @@ func NewClient(conn IConn, option *ClientOption, event IEvent) error {
 	conn.SetCloseHandler(client.hookClose)
 
 	// 绑定客户端映射关系
+	//  能一秒调用500次 QPS 1000   1500  //成本高了 看现在的流量情况 扩容
+	// 两台机器 A B
+	//
+	// A： 1 B ：2 C： D
+
+	// 服务器1  kkk   服务器2   lll
+
+	// 登陆 client 1：kkk
+
 	if client.storage != nil {
+
+		// 用户id 和 机器id绑定
 		err := client.storage.Bind(context.Background(), core.GetServerId(), client.channel.Name(), client.cid, client.uid)
 		if err != nil {
 			log.Println("[ERROR] bind client err: ", err.Error())

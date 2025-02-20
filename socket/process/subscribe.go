@@ -44,7 +44,11 @@ func (m *MessageSubscribe) Setup(ctx context.Context) error {
 }
 
 func (m *MessageSubscribe) subscribe(ctx context.Context, topic []string, consume IConsume) {
-	sub := m.redis.Subscribe(ctx, topic...)
+	sub := m.redis.Subscribe(ctx, topic...) //Publish
+	//sub := m.kafka.Subscribe(ctx, topic...)
+
+	//sub := m.kafka.Subscribe(ctx, sub)
+
 	defer func() {
 		_ = sub.Close()
 	}()

@@ -73,12 +73,12 @@ func (c *Publish) onSendText(ctx *context.Context) error {
 	}
 
 	err := c.MessageService.CreateTextMessage(ctx.Ctx(), message.CreateTextMessage{
-		TalkMode: in.TalkMode,
-		FromId:   ctx.UserId(),
-		ToFromId: in.ToFromId,
-		Content:  html.EscapeString(in.Body.Text),
-		QuoteId:  in.QuoteId,
-		Mentions: in.Body.Mentions,
+		TalkMode: in.TalkMode,                     //私聊还是群聊
+		FromId:   ctx.UserId(),                    //哪个用户ID发的消息
+		ToFromId: in.ToFromId,                     //发个哪个用户
+		Content:  html.EscapeString(in.Body.Text), //消息内容
+		QuoteId:  in.QuoteId,                      //消息的引用
+		Mentions: in.Body.Mentions,                //@了哪个消息
 	})
 
 	if err != nil {
@@ -406,8 +406,8 @@ func (c *Publish) onMixedMessage(ctx *context.Context) error {
 func (c *Publish) transfer(ctx *context.Context, typeValue string) error {
 	if mapping == nil {
 		mapping = make(map[string]func(ctx *context.Context) error)
-		mapping["text"] = c.onSendText
-		mapping["code"] = c.onSendCode
+		mapping["text"] = c.onSendText //文本
+		mapping["code"] = c.onSendCode //代码块
 		mapping["location"] = c.onSendLocation
 		mapping["emoticon"] = c.onSendEmoticon
 		mapping["image"] = c.onSendImage

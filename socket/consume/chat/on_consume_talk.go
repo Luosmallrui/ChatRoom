@@ -37,9 +37,9 @@ func (h *Handler) onConsumeTalkPrivateMessage(ctx context.Context, in types.SubE
 		return
 	}
 
-	// 没在线则不推送
+	// 没在线则不推送。从缓存里面去查用户是否在线  2 5 6 8
 	clientIds, _ := h.ClientConnectService.GetUidFromClientIds(ctx, core.GetServerId(), socket.Session.Chat.Name(), message.UserId)
-	if len(clientIds) == 0 {
+	if len(clientIds) == 0 { //私聊的用户
 		return
 	}
 
@@ -88,6 +88,8 @@ func (h *Handler) onConsumeTalkPrivateMessage(ctx context.Context, in types.SubE
 	})
 
 	socket.Session.Chat.Write(c)
+
+	// 每个客户端连接之后 都会开两个协程
 }
 
 // 群消息

@@ -34,10 +34,10 @@ func (c *ChatChannel) NewClient(uid int, conn socket.IConn) error {
 		Buffer:  10,
 	}, socket.NewEvent(
 		// 连接成功回调
-		socket.WithOpenEvent(c.Event.OnOpen),
+		socket.WithOpenEvent(c.Event.OnOpen), //推送自己已经上线
 		// 接收消息回调
-		socket.WithMessageEvent(c.Event.OnMessage),
+		socket.WithMessageEvent(c.Event.OnMessage), //发送消息的回调
 		// 关闭连接回调
-		socket.WithCloseEvent(c.Event.OnClose),
+		socket.WithCloseEvent(c.Event.OnClose), //下线的回调
 	))
 }

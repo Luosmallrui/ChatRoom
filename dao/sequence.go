@@ -22,6 +22,7 @@ func NewSequence(db *gorm.DB, cache *cache.Sequence) *Sequence {
 	return &Sequence{db: db, cache: cache}
 }
 
+// 获取会话的时序id
 func (s *Sequence) try(ctx context.Context, id int, isUserId bool) error {
 	result := s.cache.Redis().TTL(ctx, s.cache.Name(id, isUserId)).Val()
 

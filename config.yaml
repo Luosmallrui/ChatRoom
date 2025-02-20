@@ -80,4 +80,4 @@ email:
   port: 465
   username: xxxxx
   password: xxxxx
-  fromname: "Lumen IM 在线聊天"
+  fromname: "在线聊天"

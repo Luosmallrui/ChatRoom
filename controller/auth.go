@@ -32,6 +32,8 @@ func (u *Auth) RegisterRouter(r gin.IRouter) {
 	auth.POST("/refresh", context.HandlerFunc(u.Refresh))   // 刷新 Token
 	auth.POST("/logout", context.HandlerFunc(u.Logout))     // 退出登录
 	auth.POST("/forget", context.HandlerFunc(u.Forget))     // 找回密码
+
+	//a := r.Group("/api/v1/auth")
 }
 
 // Login 登录接口
@@ -71,6 +73,7 @@ func (u *Auth) Login(ctx *context.Context) error {
 		Issuer:    "im.admin",
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 	})
+	//ctx.Context.SetCookie("auth", token, time.Now(),"/","/","/")
 
 	return ctx.Success(&types.AuthLoginResponse{
 		AccessToken: types.AccessToken{

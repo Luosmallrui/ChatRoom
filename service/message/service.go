@@ -94,6 +94,8 @@ type Service struct {
 }
 
 func (s *Service) CreateMessage(ctx context.Context, option CreateMessageOption) error {
+
+	//私聊
 	if option.TalkMode == 1 {
 		return s.CreatePrivateMessage(ctx, CreatePrivateMessageOption{
 			MsgType:  option.MsgType,
@@ -103,7 +105,7 @@ func (s *Service) CreateMessage(ctx context.Context, option CreateMessageOption)
 			Extra:    option.Extra,
 		})
 	}
-
+	//群聊
 	return s.CreateGroupMessage(ctx, CreateGroupMessageOption{
 		MsgType:  option.MsgType,
 		FromId:   option.FromId,

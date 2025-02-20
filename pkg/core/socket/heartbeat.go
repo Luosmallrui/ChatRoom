@@ -37,6 +37,8 @@ func (h *heartbeat) Start(ctx context.Context) error {
 	return errors.New("heartbeat exit")
 }
 
+//  2s  5s 32s 35s 62 65s
+
 func (h *heartbeat) insert(c *Client) {
 	h.timeWheel.Add(strconv.FormatInt(c.cid, 10), c, time.Duration(heartbeatInterval)*time.Second)
 }

@@ -87,14 +87,6 @@ func (s *Service) CreatePrivateMessage(ctx context.Context, option CreatePrivate
 				Message:  jsonutil.Encode(item),
 			}),
 		}
-
-		//生产者 把消息塞到Redis的队列里面   消费者 处理这个消息
-
-		//kafka.publish
-		// 2. 发布消息到Redis
-
-		//kafka.publish(ctx, types.ImTopicChat, jsonutil.Encode(content))
-
 		pipe.Publish(ctx, types.ImTopicChat, jsonutil.Encode(content))
 		//pipe.Kakfa.Pubulish(ctx, types.ImTopicChat, jsonutil.Encode(content))
 

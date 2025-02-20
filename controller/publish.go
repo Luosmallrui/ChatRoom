@@ -5,6 +5,7 @@ import (
 	"chatroom/context"
 	"chatroom/dao/cache"
 	"chatroom/middleware"
+	"chatroom/pkg/kafka"
 	"chatroom/pkg/logger"
 	"chatroom/service"
 	"chatroom/service/message"
@@ -21,6 +22,7 @@ type Publish struct {
 	Config         *config.Config
 	AuthService    service.IAuthService
 	MessageService message.IService
+	Kafka          *kafka.KafkaClient
 }
 
 func (c *Publish) RegisterRouter(r gin.IRouter) {

@@ -47,5 +47,6 @@ func NewMySQLClient(conf *config.Config) *gorm.DB {
 	sqlDB.SetMaxOpenConns(conf.MySQL.MaxOpenConnNum)
 	sqlDB.SetConnMaxLifetime(time.Duration(conf.MySQL.ConnMaxLifetime) * time.Second)
 
+	fmt.Println("ok2")
 	return db
 }

@@ -10,6 +10,7 @@ import (
 	"chatroom/dao/cache"
 	"chatroom/pkg/client"
 	"chatroom/pkg/core"
+	"chatroom/pkg/kafka"
 	"chatroom/service"
 	"chatroom/socket"
 	"github.com/google/wire"
@@ -20,6 +21,7 @@ var ProviderSet = wire.NewSet(
 	client.NewEmailClient,
 	client.NewRedisClient,
 	config.NewFilesystem,
+	kafka.NewKafkaClient,
 	wire.Struct(new(client.Providers), "*"),
 )
 

@@ -15,6 +15,7 @@ import (
 	"chatroom/pkg/client"
 	"chatroom/pkg/core"
 	socket2 "chatroom/pkg/core/socket"
+	"chatroom/pkg/kafka"
 	"chatroom/service"
 	"chatroom/service/message"
 	"chatroom/socket"
@@ -222,11 +223,13 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		EmoticonService: emoticonService,
 		Filesystem:      iFilesystem,
 	}
+	kafkaClient := kafka.NewKafkaClient(conf)
 	publish := &controller.Publish{
 		Session:        jwtTokenStorage,
 		Config:         conf,
 		AuthService:    authService,
 		MessageService: messageService,
+		Kafka:          kafkaClient,
 	}
 	fileSplitUploadService := &service.FileSplitUploadService{
 		Source:          source,
@@ -369,4 +372,4 @@ func NewSocketInjector(conf *config.Config) *socket.AppProvider {
 
 // wire.go:
 
-var ProviderSet = wire.NewSet(client.NewMySQLClient, client.NewEmailClient, client.NewRedisClient, config.NewFilesystem, wire.Struct(new(client.Providers), "*"))
+var ProviderSet = wire.NewSet(client.NewMySQLClient, client.NewEmailClient, client.NewRedisClient, config.NewFilesystem, kafka.NewKafkaClient, wire.Struct(new(client.Providers), "*"))

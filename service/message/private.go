@@ -8,6 +8,7 @@ import (
 	"chatroom/pkg/strutil"
 	"chatroom/types"
 	"context"
+	"fmt"
 	"time"
 )
 
@@ -74,12 +75,8 @@ func (s *Service) CreatePrivateMessage(ctx context.Context, option CreatePrivate
 	if err := s.Db().WithContext(ctx).Create(items).Error; err != nil {
 		return err
 	}
-
-	// 消息推送与状态更新：
-
 	pipe := s.Source.Redis().Pipeline()
 	for _, item := range items {
-		// 1. 构建订阅消息
 		content := &types.SubscribeMessage{
 			Event: types.SubEventImMessage,
 			Payload: jsonutil.Encode(types.SubEventImMessagePayload{
@@ -87,9 +84,11 @@ func (s *Service) CreatePrivateMessage(ctx context.Context, option CreatePrivate
 				Message:  jsonutil.Encode(item),
 			}),
 		}
-		pipe.Publish(ctx, types.ImTopicChat, jsonutil.Encode(content))
-		//pipe.Kakfa.Pubulish(ctx, types.ImTopicChat, jsonutil.Encode(content))
-
+		fmt.Println(content)
+		err := s.Kafka.ProduceMessage(item.MsgId, jsonutil.Encode(content))
+		if err != nil {
+			fmt.Println(err, 55)
+		}
 		// 3. 更新未读消息计数（仅接收者）
 		if item.UserId != option.FromId {
 			s.UnreadStorage.PipeIncr(ctx, pipe, item.UserId, types.ChatPrivateMode, item.ToFromId)
@@ -101,7 +100,6 @@ func (s *Service) CreatePrivateMessage(ctx context.Context, option CreatePrivate
 			Datetime: item.CreatedAt.Format(time.DateTime),
 		})
 	}
-
 	_, _ = pipe.Exec(ctx)
 
 	return nil

@@ -7,6 +7,7 @@ import (
 	"chatroom/pkg/business"
 	"chatroom/pkg/filesystem"
 	"chatroom/pkg/jsonutil"
+	"chatroom/pkg/kafka"
 	"chatroom/pkg/logger"
 	"chatroom/pkg/strutil"
 	"chatroom/types"
@@ -89,6 +90,7 @@ type Service struct {
 	ClientStorage       *cache.ClientStorage
 	Sequence            *dao.Sequence
 	RobotRepo           *dao.Robot
+	Kafka               *kafka.KafkaClient
 
 	PushMessage *business.PushMessage
 }

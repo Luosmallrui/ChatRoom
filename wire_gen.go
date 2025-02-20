@@ -155,6 +155,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 	fileUpload := dao.NewFileUpload(db)
 	iFilesystem := config.NewFilesystem(conf)
 	robot := dao.NewRobot(db)
+	kafkaClient := kafka.NewKafkaClient(conf)
 	messageService := &message.Service{
 		Source:              source,
 		GroupMemberRepo:     groupMember,
@@ -168,6 +169,7 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		ClientStorage:       clientStorage,
 		Sequence:            daoSequence,
 		RobotRepo:           robot,
+		Kafka:               kafkaClient,
 		PushMessage:         pushMessage,
 	}
 	controllerContact := &controller.Contact{
@@ -223,7 +225,6 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 		EmoticonService: emoticonService,
 		Filesystem:      iFilesystem,
 	}
-	kafkaClient := kafka.NewKafkaClient(conf)
 	publish := &controller.Publish{
 		Session:        jwtTokenStorage,
 		Config:         conf,
@@ -350,7 +351,8 @@ func NewSocketInjector(conf *config.Config) *socket.AppProvider {
 	chatSubscribe := consume.NewChatSubscribe(handler2)
 	handler3 := example2.NewHandler()
 	exampleSubscribe := consume.NewExampleSubscribe(handler3)
-	messageSubscribe := process.NewMessageSubscribe(redisClient, chatSubscribe, exampleSubscribe)
+	kafkaClient := kafka.NewKafkaClient(conf)
+	messageSubscribe := process.NewMessageSubscribe(redisClient, chatSubscribe, exampleSubscribe, kafkaClient)
 	subServers := &process.SubServers{
 		HealthSubscribe:  healthSubscribe,
 		MessageSubscribe: messageSubscribe,

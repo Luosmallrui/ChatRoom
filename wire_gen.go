@@ -99,8 +99,10 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 	}
 	sequence := cache.NewSequence(redisClient)
 	daoSequence := dao.NewSequence(db, sequence)
+	kafkaClient := kafka.NewKafkaClient(conf)
 	pushMessage := &business.PushMessage{
 		Redis: redisClient,
+		Kafka: kafkaClient,
 	}
 	groupService := &service.GroupService{
 		Source:          source,
@@ -155,7 +157,6 @@ func NewHttpInjector(conf *config.Config) *core.AppProvider {
 	fileUpload := dao.NewFileUpload(db)
 	iFilesystem := config.NewFilesystem(conf)
 	robot := dao.NewRobot(db)
-	kafkaClient := kafka.NewKafkaClient(conf)
 	messageService := &message.Service{
 		Source:              source,
 		GroupMemberRepo:     groupMember,
@@ -277,8 +278,10 @@ func NewSocketInjector(conf *config.Config) *socket.AppProvider {
 		Source:          source,
 		GroupMemberRepo: groupMember,
 	}
+	kafkaClient := kafka.NewKafkaClient(conf)
 	pushMessage := &business.PushMessage{
 		Redis: redisClient,
+		Kafka: kafkaClient,
 	}
 	chatHandler := &chat.Handler{
 		Redis:         redisClient,
@@ -351,7 +354,6 @@ func NewSocketInjector(conf *config.Config) *socket.AppProvider {
 	chatSubscribe := consume.NewChatSubscribe(handler2)
 	handler3 := example2.NewHandler()
 	exampleSubscribe := consume.NewExampleSubscribe(handler3)
-	kafkaClient := kafka.NewKafkaClient(conf)
 	messageSubscribe := process.NewMessageSubscribe(redisClient, chatSubscribe, exampleSubscribe, kafkaClient)
 	subServers := &process.SubServers{
 		HealthSubscribe:  healthSubscribe,

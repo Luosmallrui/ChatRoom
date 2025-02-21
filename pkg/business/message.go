@@ -2,6 +2,7 @@ package business
 
 import (
 	"chatroom/pkg/jsonutil"
+	"chatroom/pkg/kafka"
 	"chatroom/types"
 	"context"
 	"github.com/redis/go-redis/v9"
@@ -9,10 +10,12 @@ import (
 
 type PushMessage struct {
 	Redis *redis.Client
+	Kafka *kafka.KafkaClient
 }
 
 func (m *PushMessage) Push(ctx context.Context, topic string, body *types.SubscribeMessage) error {
-	m.Redis.Publish(ctx, topic, jsonutil.Encode(body))
+	//m.Redis.Publish(ctx, topic, jsonutil.Encode(body))
+	m.Kafka.ProduceMessage(topic, topic, jsonutil.Encode(body))
 
 	return nil
 }

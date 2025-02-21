@@ -168,7 +168,6 @@ func (u *Contact) Search(ctx *context.Context) error {
 
 func (u *Contact) List(ctx *context.Context) error {
 	userId := ctx.UserId() //token解析获取
-	fmt.Println(userId)
 
 	list, err := u.ContactService.List(ctx.Ctx(), userId)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/cloudwego/kitex/server"
+	"google.golang.org/protobuf/proto"
 	"log"
 	"net"
 )
@@ -45,7 +46,7 @@ func (s *ConnectionServiceImpl) GetConnectionDetail(ctx context.Context, req *co
 	roomNum := 22 // 替换为 handle.RoomStorage.GetRoomNum()
 	return &connect.ConnectionResponse{
 		Chat:    int32(chatCount),
-		Example: int32(exampleCount),
-		Num:     int32(roomNum),
+		Example: proto.Int32(int32(exampleCount)),
+		Num:     proto.Int32(int32(roomNum)),
 	}, nil
 }

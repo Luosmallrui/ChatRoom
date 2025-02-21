@@ -61,12 +61,14 @@ func (x *ConnectionResponse) fastReadField1(buf []byte, _type int8) (offset int,
 }
 
 func (x *ConnectionResponse) fastReadField2(buf []byte, _type int8) (offset int, err error) {
-	x.Example, offset, err = fastpb.ReadInt32(buf, _type)
+	tmp, offset, err := fastpb.ReadInt32(buf, _type)
+	x.Example = &tmp
 	return offset, err
 }
 
 func (x *ConnectionResponse) fastReadField3(buf []byte, _type int8) (offset int, err error) {
-	x.Num, offset, err = fastpb.ReadInt32(buf, _type)
+	tmp, offset, err := fastpb.ReadInt32(buf, _type)
+	x.Num = &tmp
 	return offset, err
 }
 
@@ -96,7 +98,7 @@ func (x *ConnectionResponse) fastWriteField1(buf []byte) (offset int) {
 }
 
 func (x *ConnectionResponse) fastWriteField2(buf []byte) (offset int) {
-	if x.Example == 0 {
+	if x.Example == nil {
 		return offset
 	}
 	offset += fastpb.WriteInt32(buf[offset:], 2, x.GetExample())
@@ -104,7 +106,7 @@ func (x *ConnectionResponse) fastWriteField2(buf []byte) (offset int) {
 }
 
 func (x *ConnectionResponse) fastWriteField3(buf []byte) (offset int) {
-	if x.Num == 0 {
+	if x.Num == nil {
 		return offset
 	}
 	offset += fastpb.WriteInt32(buf[offset:], 3, x.GetNum())
@@ -137,7 +139,7 @@ func (x *ConnectionResponse) sizeField1() (n int) {
 }
 
 func (x *ConnectionResponse) sizeField2() (n int) {
-	if x.Example == 0 {
+	if x.Example == nil {
 		return n
 	}
 	n += fastpb.SizeInt32(2, x.GetExample())
@@ -145,7 +147,7 @@ func (x *ConnectionResponse) sizeField2() (n int) {
 }
 
 func (x *ConnectionResponse) sizeField3() (n int) {
-	if x.Num == 0 {
+	if x.Num == nil {
 		return n
 	}
 	n += fastpb.SizeInt32(3, x.GetNum())

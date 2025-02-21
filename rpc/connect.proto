@@ -12,6 +12,6 @@ message EmptyRequest {}
 
 message ConnectionResponse {
   int32 chat = 1;
-  int32 example = 2;
-  int32 num = 3;
+  optional int32 example = 2; // 将字段声明为 optional
+  optional int32 num = 3;     // 同样可以为其他字段添加 optional
 }

@@ -13,3 +13,9 @@
 ```shell
 go run .
 ```
+
+4. 微服务gen
+
+```shell
+ kitex -module chatroom -type protobuf rpc/connect.proto
+```

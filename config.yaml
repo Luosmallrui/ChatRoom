@@ -16,6 +16,7 @@ app:
 server:
   http: 8082
   websocket: 8083
+  rpc: 8889
 
 kafka:
   brokers:

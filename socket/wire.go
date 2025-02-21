@@ -16,7 +16,6 @@ import (
 )
 
 var ProviderSet = wire.NewSet(
-	//core.NewGinServer,
 	business.ProviderSet,
 	router.NewRouter,
 	socket.NewRoomStorage,

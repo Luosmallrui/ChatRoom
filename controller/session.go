@@ -10,11 +10,14 @@ import (
 	"chatroom/pkg/encrypt"
 	"chatroom/pkg/strutil"
 	"chatroom/pkg/timeutil"
+	connect "chatroom/rpc/kitex_gen/connect/connectionservice"
 	"chatroom/service"
 	"chatroom/types"
 	"fmt"
+	"github.com/cloudwego/kitex/client"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
+	"log"
 	"strings"
 )
 
@@ -41,8 +44,9 @@ type Session struct {
 
 func (c *Session) RegisterRouter(r gin.IRouter) {
 	authorize := middleware.Auth(c.Config.Jwt.Secret, "admin", c.Session)
-	r.Use(authorize)
+	//r.Use(authorize)
 	talk := r.Group("/api/v1/talk")
+	talk.Use(authorize)
 	talk.GET("/list", context.HandlerFunc(c.List))          // 会话列表
 	talk.POST("/create", context.HandlerFunc(c.Create))     // 创建会话
 	talk.POST("/delete", context.HandlerFunc(c.Delete))     // 删除会话
@@ -53,6 +57,30 @@ func (c *Session) RegisterRouter(r gin.IRouter) {
 	//talk.GET("/forward-records", context.HandlerFunc(c.GetForwardRecords))    // 会话转发记录
 	//talk.GET("/file-download", context.HandlerFunc(c.Download))               // 下载文件
 	talk.POST("/clear-unread", context.HandlerFunc(c.ClearUnreadMessage)) // 清除会话未读数
+
+	connect := r.Group("/api/v1/connect")
+	connect.GET("/detail", context.HandlerFunc(c.Detail))
+}
+
+func (c *Session) Detail(ctx *context.Context) error {
+	client, err := connect.NewClient("ConnectionService",
+		client.WithHostPorts(fmt.Sprintf(":%d", c.Config.Server.Rpc))) // 服务名与服务端保持一致
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.GetConnectionDetail(ctx.Ctx())
+	if err != nil {
+		log.Fatalf("Failed to call GetConnectionDetail: %v", err)
+	}
+
+	// 输出结果
+	log.Printf("Connection Detail: Chat=%d, Example=%d, Num=%d", resp.Chat, resp.Example, resp.Num)
+
+	return ctx.Success(map[string]any{
+		"detail": resp,
+	})
+	return nil
 }
 
 // GetRecords 获取会话记录

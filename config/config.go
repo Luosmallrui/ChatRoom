@@ -25,6 +25,7 @@ type Server struct {
 	Http      int `json:"http" yaml:"http"`
 	Websocket int `json:"websocket" yaml:"websocket"`
 	Tcp       int `json:"tcp" yaml:"tcp"`
+	Rpc       int `json:"rpc" yaml:"rpc"`
 }
 
 func New(filename string) *Config {

@@ -5,12 +5,13 @@ import (
 	"chatroom/context"
 	"chatroom/dao"
 	"chatroom/dao/cache"
+	pb "chatroom/kitex_gen/connect"
+	connect "chatroom/kitex_gen/connect/connectionservice"
 	"chatroom/middleware"
 	"chatroom/model"
 	"chatroom/pkg/encrypt"
 	"chatroom/pkg/strutil"
 	"chatroom/pkg/timeutil"
-	connect "chatroom/rpc/kitex_gen/connect/connectionservice"
 	"chatroom/service"
 	"chatroom/types"
 	"fmt"
@@ -69,7 +70,8 @@ func (c *Session) Detail(ctx *context.Context) error {
 		return err
 	}
 
-	resp, err := client.GetConnectionDetail(ctx.Ctx())
+	req := &pb.EmptyRequest{}
+	resp, err := client.GetConnectionDetail(ctx.Ctx(), req)
 	if err != nil {
 		log.Fatalf("Failed to call GetConnectionDetail: %v", err)
 	}

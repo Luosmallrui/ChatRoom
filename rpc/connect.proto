@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package rpc;
+
+option go_package = "chatroom/kitex_gen/connect";
+
+service ConnectionService {
+  rpc GetConnectionDetail (EmptyRequest) returns (ConnectionResponse);
+}
+
+message EmptyRequest {}
+
+message ConnectionResponse {
+  int32 chat = 1;
+  int32 example = 2;
+  int32 num = 3;
+}

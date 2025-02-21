@@ -3,7 +3,7 @@
 package connectionservice
 
 import (
-	connect "chatroom/rpc/kitex_gen/connect"
+	connect "chatroom/kitex_gen/rpc/connect"
 	"context"
 	client "github.com/cloudwego/kitex/client"
 	callopt "github.com/cloudwego/kitex/client/callopt"
@@ -11,7 +11,7 @@ import (
 
 // Client is designed to provide IDL-compatible methods with call-option parameter for kitex framework.
 type Client interface {
-	GetConnectionDetail(ctx context.Context, callOptions ...callopt.Option) (r *connect.ConnectionResponse, err error)
+	GetConnectionDetail(ctx context.Context, Req *connect.EmptyRequest, callOptions ...callopt.Option) (r *connect.ConnectionResponse, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -21,7 +21,7 @@ func NewClient(destService string, opts ...client.Option) (Client, error) {
 
 	options = append(options, opts...)
 
-	kc, err := client.NewClient(serviceInfoForClient(), options...)
+	kc, err := client.NewClient(serviceInfo(), options...)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ type kConnectionServiceClient struct {
 	*kClient
 }
 
-func (p *kConnectionServiceClient) GetConnectionDetail(ctx context.Context, callOptions ...callopt.Option) (r *connect.ConnectionResponse, err error) {
+func (p *kConnectionServiceClient) GetConnectionDetail(ctx context.Context, Req *connect.EmptyRequest, callOptions ...callopt.Option) (r *connect.ConnectionResponse, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.GetConnectionDetail(ctx)
+	return p.kClient.GetConnectionDetail(ctx, Req)
 }

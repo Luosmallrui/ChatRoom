@@ -2,9 +2,9 @@ package rpc
 
 import (
 	"chatroom/config"
+	"chatroom/kitex_gen/connect"
+	c "chatroom/kitex_gen/connect/connectionservice"
 	"chatroom/pkg/core/socket"
-	"chatroom/rpc/kitex_gen/connect"
-	c "chatroom/rpc/kitex_gen/connect/connectionservice"
 	"context"
 	"fmt"
 	"github.com/cloudwego/kitex/server"
@@ -39,7 +39,7 @@ func StartRpcServer(conf *config.Config) error {
 // ConnectionServiceImpl 是 RPC 服务的实现
 type ConnectionServiceImpl struct{}
 
-func (s *ConnectionServiceImpl) GetConnectionDetail(ctx context.Context) (*connect.ConnectionResponse, error) {
+func (s *ConnectionServiceImpl) GetConnectionDetail(ctx context.Context, req *connect.EmptyRequest) (*connect.ConnectionResponse, error) {
 	chatCount := socket.Session.Chat.Count()
 	exampleCount := socket.Session.Example.Count()
 	roomNum := 22 // 替换为 handle.RoomStorage.GetRoomNum()

@@ -2,7 +2,7 @@
 package connectionservice
 
 import (
-	connect "chatroom/rpc/kitex_gen/connect"
+	connect "chatroom/kitex_gen/rpc/connect"
 	server "github.com/cloudwego/kitex/server"
 )
 
@@ -11,7 +11,6 @@ func NewServer(handler connect.ConnectionService, opts ...server.Option) server.
 	var options []server.Option
 
 	options = append(options, opts...)
-	options = append(options, server.WithCompatibleMiddlewareForUnary())
 
 	svr := server.NewServer(options...)
 	if err := svr.RegisterService(serviceInfo(), handler); err != nil {

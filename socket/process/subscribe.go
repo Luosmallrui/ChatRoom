@@ -21,6 +21,7 @@ type MessageSubscribe struct {
 	Kafka          *k.KafkaClient
 	defaultConsume *consume.ChatSubscribe
 	exampleConsume *consume.ExampleSubscribe
+	messageQueue   chan *redis.Message
 }
 
 func NewMessageSubscribe(redis *redis.Client, defaultConsume *consume.ChatSubscribe, exampleConsume *consume.ExampleSubscribe,
@@ -33,101 +34,81 @@ type IConsume interface {
 }
 
 func (m *MessageSubscribe) Setup(ctx context.Context) error {
+	defer m.Kafka.Close()
 
 	log.Println("Start MessageSubscribe")
 
-	go m.Subscribe(ctx, []string{types.ImTopicChat, fmt.Sprintf(types.ImTopicChatPrivate, core.GetServerId())}, m.defaultConsume)
-
-	//go m.subscribe(ctx, []string{entity.ImTopicExample, fmt.Sprintf(entity.ImTopicExamplePrivate, server.ID())}, m.exampleConsume)
-
-	<-ctx.Done()
-
+	// 初始化消息队列
+	m.messageQueue = make(chan *redis.Message, 1000) // 队列大小可根据需求调整
+	// 启动工作池，设置并发数为 10（可根据需求调整）
+	m.startWorkerPool(ctx, m.defaultConsume, 10)
+	// 启动 Kafka 消费者
+	go m.Subscribe(ctx, []string{
+		types.ImTopicChat,
+		fmt.Sprintf(types.ImTopicChatPrivate, core.GetServerId()),
+	}, m.defaultConsume)
+	<-ctx.Done() // 等待上下文取消信号
 	return nil
 }
 
+// Subscribe 消费多个主题的消息
 func (m *MessageSubscribe) Subscribe(ctx context.Context, topics []string, consume IConsume) {
-	// 定义 Kafka 消费者配置
-	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:     []string{"localhost:9092"},
-		GroupID:     "im_group",      // 消费者组 ID
-		Topic:       "im_topic_chat", // 假设只消费一个主题
-		MinBytes:    1,               // 最小消息字节数
-		MaxBytes:    10e6,            // 最大消息字节数
-		StartOffset: kafka.LastOffset,
-		MaxWait:     10 * time.Millisecond, // 最大等待时间，默认是 500ms，可调低
-	})
-	defer reader.Close()
-
-	fmt.Println("Kafka 消费者已启动，等待消息...")
-
-	// 消息处理通道
-	msgChan := make(chan kafka.Message, 100)
-
-	// 使用 WaitGroup 来确保所有协程处理完成后退出
 	var wg sync.WaitGroup
-	workerCount := 10 // 最大并发数
-	workerPool := make(chan struct{}, workerCount)
 
-	// 启动消息处理协程
-	go func() {
-		for msg := range msgChan {
-			workerPool <- struct{}{} // 控制并发数量
-			wg.Add(1)
-			go func(msg kafka.Message) {
-				defer wg.Done()
-				defer func() { <-workerPool }()
+	for _, topic := range topics {
+		wg.Add(1)
+		go func(topic string) {
+			defer wg.Done()
+			reader := kafka.NewReader(kafka.ReaderConfig{
+				Brokers:     []string{"localhost:9092"},
+				GroupID:     "im_group",
+				Topic:       topic,
+				MinBytes:    1,
+				MaxBytes:    10e6,
+				MaxWait:     50 * time.Millisecond,
+				StartOffset: kafka.LastOffset,
+			})
+			defer reader.Close()
 
-				// 调用处理逻辑
-				if err := m.handleKafkaMessage(msg, consume); err != nil {
-					log.Printf("处理消息时出错: %v", err)
-				}
-			}(msg)
-		}
-	}()
-
-	// 主消费循环
-	for {
-		select {
-		case <-ctx.Done():
-			close(msgChan) // 关闭消息处理通道
-			wg.Wait()      // 等待所有协程完成
-			fmt.Println("消费已停止")
-			return
-		default:
-			// 从 Kafka 读取消息
-			msg, err := reader.ReadMessage(ctx)
-			if err != nil {
-				if ctx.Err() != nil {
-					// 上下文被取消，退出循环
-					fmt.Println("消费已停止，收到上下文取消信号")
-					close(msgChan)
-					wg.Wait()
+			for {
+				select {
+				case <-ctx.Done():
 					return
+				default:
+					msg, err := reader.ReadMessage(ctx)
+					if err != nil {
+						continue
+					}
+					m.handleKafkaMessage(msg, consume)
 				}
-				log.Printf("读取 Kafka 消息时出错: %v", err)
-				continue
 			}
-
-			// 将消息发送到处理通道
-			msgChan <- msg
-
-			// 提交偏移量
-			if err := reader.CommitMessages(ctx, msg); err != nil {
-				log.Printf("提交消息偏移量时出错: %v", err)
-			}
-		}
+		}(topic)
 	}
+
+	wg.Wait()
 }
 
 func (m *MessageSubscribe) handleKafkaMessage(msg kafka.Message, consume IConsume) error {
-	// 转换Redis消息格式为通用格式
-	redisMsg := &redis.Message{
+	m.messageQueue <- &redis.Message{
 		Channel: msg.Topic,
 		Pattern: msg.Topic,
 		Payload: string(msg.Value),
 	}
-	go m.handle(redisMsg, consume)
 	return nil
+}
+func (m *MessageSubscribe) startWorkerPool(ctx context.Context, consume IConsume, workerCount int) {
+	for i := 0; i < workerCount; i++ {
+		go func() {
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case msg := <-m.messageQueue:
+					m.handle(msg, consume)
+				}
+			}
+		}()
+	}
 }
 
 func (m *MessageSubscribe) handle(data *redis.Message, consume IConsume) {

@@ -9,8 +9,8 @@ const (
 
 const (
 	// ImTopicChat 默认渠道消息订阅
-	ImTopicChat        = "im:message:chat:all"
-	ImTopicChatPrivate = "im:message:chat:%s"
+	ImTopicChat        = "im_message_chat_all"
+	ImTopicChatPrivate = "im_message_chat_%s"
 
 	// ImTopicExample Example渠道消息订阅
 	ImTopicExample        = "im:message:example:all"

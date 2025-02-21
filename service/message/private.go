@@ -84,8 +84,7 @@ func (s *Service) CreatePrivateMessage(ctx context.Context, option CreatePrivate
 				Message:  jsonutil.Encode(item),
 			}),
 		}
-		fmt.Println(content)
-		err := s.Kafka.ProduceMessage(item.MsgId, jsonutil.Encode(content))
+		err := s.Kafka.ProduceMessage(types.ImTopicChat, item.MsgId, jsonutil.Encode(content))
 		if err != nil {
 			fmt.Println(err, 55)
 		}

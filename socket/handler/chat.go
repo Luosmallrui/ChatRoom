@@ -16,7 +16,8 @@ type ChatChannel struct {
 
 // Conn 初始化连接
 func (c *ChatChannel) Conn(ctx *context.Context) error {
-	log.Printf("Attempting WebSocket connection with token: %s")
+	token := ctx.Context.Request.Header.Get("Authorization")
+	log.Printf("Attempting WebSocket connection with token: %s", token)
 	conn, err := adapter.NewWsAdapter(ctx.Context.Writer, ctx.Context.Request)
 	if err != nil {
 		log.Printf("websocket connect error: %s", err.Error())

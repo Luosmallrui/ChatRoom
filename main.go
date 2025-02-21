@@ -5,64 +5,45 @@ import (
 	"chatroom/pkg/core"
 	"chatroom/socket"
 	"github.com/urfave/cli/v2"
-	"os"
-	"sync"
 )
 
-func NewServerCommand() core.Command {
+// 创建 HTTP 服务命令
+func NewHttpServerCommand() core.Command {
 	return core.Command{
-		Name:  "server",
-		Usage: "Start both HTTP and WebSocket servers",
+		Name:  "http",
+		Usage: "Start the HTTP server",
 		Action: func(ctx *cli.Context, conf *config.Config) error {
-			var wg sync.WaitGroup
-			errChan := make(chan error, 2)
-
-			// 启动 HTTP 服务
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				httpApp := NewHttpInjector(conf)
-				httpApp.RegisterRoutes()
-				if err := core.Run(ctx, httpApp); err != nil {
-					errChan <- err
-				}
-			}()
-
-			// 启动 WebSocket 服务
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				socketApp := NewSocketInjector(conf)
-				if err := socket.Run(ctx, socketApp); err != nil {
-					errChan <- err
-				}
-			}()
-
-			// 等待错误或完成
-			go func() {
-				wg.Wait()
-				close(errChan)
-			}()
-
-			// 返回第一个发生的错误（如果有）
-			for err := range errChan {
-				if err != nil {
-					return err
-				}
+			httpApp := NewHttpInjector(conf)
+			httpApp.RegisterRoutes()
+			if err := core.Run(ctx, httpApp); err != nil {
+				return err
 			}
+			return nil
+		},
+	}
+}
 
+// 创建 WebSocket 服务命令
+func NewWebSocketServerCommand() core.Command {
+	return core.Command{
+		Name:  "websocket",
+		Usage: "Start the WebSocket server",
+		Action: func(ctx *cli.Context, conf *config.Config) error {
+			socketApp := NewSocketInjector(conf)
+			if err := socket.Run(ctx, socketApp); err != nil {
+				return err
+			}
 			return nil
 		},
 	}
 }
 
 func main() {
+	// 创建 CLI 应用
 	app := core.NewApp("v1.0.0")
-	app.Register(NewServerCommand)
-	os.Args = append(os.Args, "server")
+	app.Register(NewHttpServerCommand)
+	app.Register(NewWebSocketServerCommand)
+
+	// 运行命令
 	app.Run()
 }
-
-// Web Http服务
-
-// websocket
